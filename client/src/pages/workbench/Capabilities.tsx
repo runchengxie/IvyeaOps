@@ -39,6 +39,7 @@ import { marketBrowse, marketStatus, type MarketItem } from "../../api/client";
 import { errText } from "../../lib/errText";
 import { APPROVAL_MODES, approvalLabel, type ApprovalWire } from "../../lib/approvalModes";
 import CommunityMarket from "./CommunityMarket";
+import EmagCapabilities from "./EmagCapabilities";
 import { openSettings } from "../../components/SettingsDialog";
 
 // Skill 中心那三块并进来了。**懒加载**：它们加起来 1500+ 行（还带代码编辑器和文件树），
@@ -48,11 +49,10 @@ const IdeaSkill = lazy(() => import("./IdeaSkill"));
 const SkillBrowse = lazy(() => import("../skill/SkillBrowse"));
 const ImportGitHubDialog = lazy(() => import("../skill/ImportGitHubDialog"));
 
-type Tab = "community" | "skills" | "mcp" | "agents" | "auth";
+type Tab = "emag" | "community" | "skills" | "mcp" | "agents" | "auth";
 
 const TABS: { key: Tab; icon: string; label: string; hint: string }[] = [
-  // **社区排第一，也是默认页。** 打开「能力市场」看到的第一屏就该是"能拿到什么
-  // 新东西"，而不是"我本地已经有什么" —— 后者用户本来就知道。
+  { key: "emag", icon: "◈", label: "eMAG 能力", hint: "已实现能力、证据状态与手动运行入口" },
   { key: "community", icon: "⬢", label: "社区市场", hint: "别人做好的方法，装过来就能用" },
   { key: "skills", icon: "✦", label: "技能", hint: "把好方法固化成可复用的流程" },
   { key: "mcp", icon: "⚑", label: "MCP", hint: "让 Agent 连得上工具和数据" },
@@ -644,7 +644,7 @@ function AuthTab() {
   if (loading) return <div className="skeleton line lg" />;
 
   return (
-    <Section title="数据源授权" sub="只读状态。密钥统一在「系统配置 → 数据源」填写，避免两处都能改">
+    <Section title="原平台数据源授权" sub="以下配置用于原有 Amazon 能力，不代表已接入 eMAG。eMAG 凭证独立保存在操作系统凭据中。">
       <table className="tbl cap-table">
         <thead><tr><th>数据源</th><th>用途</th><th>状态</th></tr></thead>
         <tbody>
@@ -682,12 +682,11 @@ function CapabilitiesInner() {
   const canMarket = isAdmin || permissions.includes("skill-hub");
   const tabs = useMemo(() => TABS.filter((t) => t.key !== "community" || canMarket), [canMarket]);
 
-  const [tab, setTab] = useState<Tab>(() => {
-    const t = new URLSearchParams(window.location.search).get("tab") as Tab | null;
-    if (t && TABS.some((x) => x.key === t)) return t;
-    return "community";
-  });
-  // 默认页是社区市场；没权限的人要落到下一格，否则第一屏还是空的。
+  const [params, setParams] = useSearchParams();
+  const requested=params.get('tab') as Tab|null;
+  const tab:Tab=requested&&TABS.some(t=>t.key===requested)?requested:'emag';
+  const setTab=(next:Tab)=>setParams(prev=>{const p=new URLSearchParams(prev);p.set('tab',next);return p;});
+  // 显式旧标签深链继续生效；没有权限的社区标签回到 eMAG 目录。
   // 深链 ?tab=community 同理，不能因为地址栏里写着就放行。
   const active: Tab = tabs.some((t) => t.key === tab) ? tab : (tabs[0]?.key ?? "skills");
   const hint = useMemo(() => TABS.find((t) => t.key === active)?.hint || "", [active]);
@@ -710,6 +709,8 @@ function CapabilitiesInner() {
       </div>
 
       <div className="wb-enter" key={active}>
+        {active === "emag" && <EmagCapabilities isAdmin={isAdmin} />}
+        {active !== "emag" && <p style={{padding:'10px 16px',lineHeight:1.7}}>通用能力与原平台工具：使用前核对技能/数据源的适用平台；Amazon ASIN、广告和关键词工具未适配 eMAG PNK。</p>}
         {active === "community" && <CommunityMarket embedded />}
         {active === "skills" && <SkillsTab canRunSkillHub={canMarket} />}
         {active === "mcp" && <McpTab isAdmin={isAdmin} />}

@@ -1654,6 +1654,12 @@ export function installMockApi(): void {
     const ms = delayFor((config.baseURL || "") + (config.url || ""));
     if (ms) await new Promise((r) => setTimeout(r, ms));
     const full = (config.baseURL || "/api").replace(/^\/api/, "") + (config.url || "");
+    ((window as any).__harnessRequests ||= []).push(full);
+    const emagCase=new URLSearchParams(location.search).get('emagstatus');
+    if(full==='/emag/stores'&&emagCase==='empty')return {...reply(config),data:[]};
+    if((full==='/emag/stores'&&emagCase==='offline')||(full.endsWith('/job')&&['no-job','job-error'].includes(emagCase||''))){
+      throw Object.assign(new Error('Synthetic eMAG fixture error'),{isAxiosError:true,response:{status:emagCase==='no-job'?404:503,data:{detail:'Synthetic fixture'}}});
+    }
     if (lxOff || lxErr) {
       if (lxOff && full.startsWith("/cockpit/status")) {
         const r: any = reply(config);
