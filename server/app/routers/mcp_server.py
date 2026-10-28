@@ -48,6 +48,11 @@ def _schema(props: Optional[dict] = None, required: Optional[list] = None) -> di
 
 # 店铺变更仍未开放；唯一写工具是保存本地巡检报告。
 TOOLS: Dict[str, dict] = {
+    "ivyea_emag_job_status": {
+        "description": "读取最近手动 eMAG 巡检回执，区分新采集、离线重放及失败阶段；不启动采集。",
+        "inputSchema": _schema({"store_id": {"type": "string"}}, ["store_id"]),
+        "scope": "read",
+    },
     "ivyea_store_snapshot": {
         "description": "读取最近导入的店铺快照，包含采集时间、来源、覆盖范围与限制；不是实时店铺查询。",
         "inputSchema": _schema({"store_id": {"type": "string"}}, ["store_id"]),
@@ -133,7 +138,7 @@ def _dump(obj: Any) -> dict:
 
 async def _call_tool(name: str, args: dict) -> dict:
     """执行一个工具，返回 MCP 的 content 结构。"""
-    if name in {"ivyea_store_snapshot", "ivyea_report_save", "ivyea_report_read"}:
+    if name in {"ivyea_store_snapshot", "ivyea_report_save", "ivyea_report_read", "ivyea_emag_job_status"}:
         from app.services import store_artifacts as stores
         spec = TOOLS[name]["inputSchema"]
         if not isinstance(args, dict) or set(args) - set(spec["properties"]):
@@ -141,6 +146,9 @@ async def _call_tool(name: str, args: dict) -> dict:
         if any(not isinstance(args.get(key), str) for key in spec["required"]):
             return _text("Required arguments must be strings", is_error=True)
         try:
+            if name == "ivyea_emag_job_status":
+                from app.services import emag_jobs
+                return _dump(emag_jobs.latest(args['store_id']))
             if name == "ivyea_store_snapshot":
                 return _dump(stores.read_snapshot(args['store_id']))
             if name == "ivyea_report_read":

@@ -114,7 +114,7 @@ const QUEUE_KEY = "ivyea-ops.console.queue";
 
 /** 兜底通道（agent 掉线时）的人设。agent 在时人设由 serve 那边给。 */
 const FALLBACK_SYSTEM =
-  "你是亚马逊运营助手，用中文清晰作答；需要时用 Markdown（表格/列表/标题）写出可直接复制的文档。";
+  "你是 eMAG 运营助手，用中文清晰作答。默认 RO/RON，区分商品 ID、SKU 与 PNK；不得作为 Amazon ASIN 查询。先读取带采集时间、来源、范围和限制的快照，没有证据的市场需求、利润、成本标为未知。只读巡检和本地草稿不代表已改动店铺。";
 
 /**
  * `have >= want` 吗（纯数字点分版本）。取不到版本一律当成"老的"，宁可走兼容分支。
@@ -1120,6 +1120,7 @@ function ConsoleInner({ embedded = false, sessionId: embedSession = "",
           goal_mode: composer.goal || undefined,
           // 人设排最前：它定义"以什么身份、什么判断标准作答"，逻辑上先于本轮材料。
           system: [
+            FALLBACK_SYSTEM,
             composer.system ? "[角色设定 —— 按这个身份和判断标准作答]\n" + composer.system : "",
             visionSystem,
             imageRefSystem,
@@ -1137,7 +1138,7 @@ function ConsoleInner({ embedded = false, sessionId: embedSession = "",
           // 这一端有人在看，也画得出选项卡 —— 模型拿不准时才该把岔路弹过来。
           // 不带这个字段的调用方（服务端自己读流的那几处）不会收到选项卡。
           interactive: true,
-          ops_context: { board: "console", pathname: "/console" },
+          ops_context: { board: "console", pathname: "/console", platform: "emag", marketplace: "RO" },
         },
         stream.handlers,
         { signal: ctrl.signal },

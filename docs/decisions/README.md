@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0039](./0039-emag-evidence-workspace.md) | eMAG 页面复用快照，无头运行与模型解耦 | 2026-10-28 |
 | [0038](./0038-drop-unused-psd-tools.md) | 移除未使用的 psd-tools，保留 Python 3.9 兼容性 | 2026-10-28 |
 | [0037](./0037-emag-readonly-cli.md) | eMAG 采集使用独立只读 CLI | 2026-10-28 |
 | [0036](./0036-external-agent-store-artifacts.md) | 外部 Agent 通过 MCP 使用店铺快照与本地报告 | 2026-10-28 |

@@ -60,6 +60,9 @@ DB_PATH = settings.data_dir / "image_workspace.sqlite3"
 # Target marketplaces → language for the translate instruction. English variants
 # are included for completeness (mostly a no-op when the source is English).
 TARGET_LANGS: dict[str, dict[str, str]] = {
+    "RO": {"lang": "Romanian", "locale": "ro-RO", "label": "罗马尼亚 🇷🇴"},
+    "BG": {"lang": "Bulgarian", "locale": "bg-BG", "label": "保加利亚 🇧🇬"},
+    "HU": {"lang": "Hungarian", "locale": "hu-HU", "label": "匈牙利 🇭🇺"},
     "DE": {"lang": "German", "locale": "de-DE", "label": "德国 🇩🇪"},
     "FR": {"lang": "French", "locale": "fr-FR", "label": "法国 🇫🇷"},
     "ES": {"lang": "Spanish", "locale": "es-ES", "label": "西班牙 🇪🇸"},

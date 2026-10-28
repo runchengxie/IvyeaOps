@@ -1,5 +1,7 @@
 # IvyeaOps · 自托管亚马逊运营工作台
 
+> **本 fork 正在聚焦 eMAG RO。** 默认业务页面使用带来源版本的 eMAG 快照，提供巡检、经营证据、本地 Listing/调研/方案草稿及手动无头运行。先看 [eMAG 工作台能力与运行方式](docs/emag-workspace.md)。目前不启用 eMAG 自动上架、改价、订单写入或定时任务；原 Amazon 功能保留在明确的旧页面入口。以下截图及发布包说明主要来自上游 Amazon 版本。
+
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Hector-xue/IvyeaOps?label=release)](https://github.com/Hector-xue/IvyeaOps/releases/latest)
 [![Stars](https://img.shields.io/github/stars/Hector-xue/IvyeaOps?style=flat&logo=github)](https://github.com/Hector-xue/IvyeaOps/stargazers)

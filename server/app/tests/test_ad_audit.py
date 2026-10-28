@@ -656,8 +656,8 @@ def test_sweep_stale_running_flips_ghosts(tmp_path, monkeypatch):
         }), encoding="utf-8")
     n = ad_audit.sweep_stale_running()
     assert n == 2
-    assert json.loads((root / "ghost1" / "meta.json").read_text())["status"] == "failed"
-    assert json.loads((root / "keep" / "meta.json").read_text())["status"] == "done"
+    assert json.loads((root / "ghost1" / "meta.json").read_text(encoding="utf-8"))["status"] == "failed"
+    assert json.loads((root / "keep" / "meta.json").read_text(encoding="utf-8"))["status"] == "done"
 
 
 def test_download_html_renders_self_contained(tmp_path, monkeypatch):

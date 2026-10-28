@@ -23,9 +23,8 @@ import {
 // and only fetched on first visit — keeps the initial bundle small.
 const Terminal = lazy(() => import("../pages/workbench/Terminal"));
 const Agents = lazy(() => import("../pages/workbench/Agents"));
-const Market = lazy(() => import("../pages/workbench/Market"));
-const Playbook = lazy(() => import("../pages/workbench/Playbook"));
-const Tools = lazy(() => import("../pages/workbench/Tools"));
+const EmagWorkspace = lazy(() => import("../pages/workbench/EmagWorkspace"));
+import EmagContext from "../components/EmagContext";
 
 function BoardFallback() {
   return <div style={{ padding: 40, textAlign: "center", color: "var(--t3)", fontSize: "var(--fs-13)" }}>加载中…</div>;
@@ -53,9 +52,9 @@ import { TOURS, hasTour } from "../lib/tours";
 // Which paths belong here now comes from lib/navRegistry (`keepAlive` /
 // `persistent` flags) — this map only says *how* to render each one.
 const KEEP_ALIVE_BOARDS: Record<string, () => ReactElement> = {
-  "/market": () => <Market />,
-  "/playbook": () => <Playbook />,
-  "/tools": () => <Tools />,
+  "/market": () => <EmagWorkspace mode="market" />,
+  "/playbook": () => <EmagWorkspace mode="playbook" />,
+  "/tools": () => <EmagWorkspace mode="tools" />,
 };
 
 // Boards mounted forever after their first visit (WebSocket / session state).
@@ -654,6 +653,7 @@ export default function MainLayout() {
           <TopbarSlotHost />
         </div>
         <div className={"content" + (isFullPage(location.pathname) ? " content-fullpage" : "")}>
+          <EmagContext />
           {/* Persistent boards (terminal / agents) are always mounted after their
               first visit but hidden when not active, so their WebSocket and
               session state survive board switches.
