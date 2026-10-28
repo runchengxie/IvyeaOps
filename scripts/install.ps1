@@ -8,7 +8,7 @@
 #   5. 创建桌面快捷方式（默认后台启动，不常驻终端窗口）
 #   6. 可选：立即启动
 #
-# 用法：双击根目录的「安装 IvyeaOps.bat」，或：
+# 用法：双击根目录的「scripts/install.bat」，或：
 #   powershell -ExecutionPolicy Bypass -File scripts\install.ps1
 
 Set-StrictMode -Version Latest
@@ -53,7 +53,7 @@ function Find-Node {
 }
 
 # 预构建发行包已自带 client\dist —— 此时完全不需要 Node/npm 与前端构建。
-$HasPrebuilt = Test-Path "$RepoRoot\client\dist\index.html"
+$HasPrebuilt = Test-Path "$RepoRoot\src\client\dist\index.html"
 
 # ── 1. 自动检测 / 安装运行环境 ────────────────────────────────────────────────
 Write-Info "检测运行环境..."
@@ -111,29 +111,29 @@ if ($useCN) {
 
 # ── 2. 后端依赖（独立虚拟环境）────────────────────────────────────────────────
 Write-Info "创建虚拟环境并安装后端依赖..."
-$VenvPy = "$RepoRoot\server\.venv\Scripts\python.exe"
+$VenvPy = "$RepoRoot\src\server\.venv\Scripts\python.exe"
 if (-not (Test-Path $VenvPy)) {
-    & $Python -m venv "$RepoRoot\server\.venv"
+    & $Python -m venv "$RepoRoot\src\server\.venv"
 }
 if (-not (Test-Path $VenvPy)) { Write-Fail "创建虚拟环境失败。" }
 
-$Wheelhouse = "$RepoRoot\server\vendor\wheels"
+$Wheelhouse = "$RepoRoot\src\server\vendor\wheels"
 $HasWheelhouse = (Test-Path $Wheelhouse) -and [bool](Get-ChildItem -Path $Wheelhouse -Filter "*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1)
 $PyTag = & $VenvPy -c "import sys; print(f'cp{sys.version_info.major}{sys.version_info.minor}')"
 $CanUseWheelhouse = $HasWheelhouse -and ($PyTag -eq "cp312")
 
 if ($CanUseWheelhouse) {
     Write-Info "  检测到预置 Windows 后端依赖包（$PyTag）——优先离线安装。"
-    & $VenvPy -m pip install -q --no-index --find-links "$Wheelhouse" -r "$RepoRoot\server\requirements.txt"
+    & $VenvPy -m pip install -q --no-index --find-links "$Wheelhouse" -r "$RepoRoot\src\server\requirements.txt"
     if ($LASTEXITCODE -ne 0) {
         Write-Warn "离线依赖安装失败，回退在线 pip 安装。"
         & $VenvPy -m pip install -q @PipMirror --upgrade pip
-        & $VenvPy -m pip install -q @PipMirror -r "$RepoRoot\server\requirements.txt"
+        & $VenvPy -m pip install -q @PipMirror -r "$RepoRoot\src\server\requirements.txt"
     }
 } else {
     if ($HasWheelhouse) { Write-Warn "预置依赖包面向 Python 3.12，当前为 $PyTag —— 将在线安装后端依赖。" }
     & $VenvPy -m pip install -q @PipMirror --upgrade pip
-    & $VenvPy -m pip install -q @PipMirror -r "$RepoRoot\server\requirements.txt"
+    & $VenvPy -m pip install -q @PipMirror -r "$RepoRoot\src\server\requirements.txt"
 }
 if ($LASTEXITCODE -ne 0) { Write-Fail "后端依赖安装失败。请检查网络、Python 版本或磁盘空间后重试。" }
 Write-Info "  后端依赖已装进 server\.venv。"
@@ -141,7 +141,7 @@ Write-Info "  后端依赖已装进 server\.venv。"
 # ── 3. 前端构建（预构建包已自带 dist 则整段跳过）──────────────────────────────
 if (-not $HasPrebuilt) {
 Write-Info "构建前端..."
-Set-Location "$RepoRoot\client"
+Set-Location "$RepoRoot\src\client"
 # 关键修复：
 #  · 不要 --silent —— 它会吞掉 npm 的安装/构建错误，正是“看起来装好了其实没构建”的根因。
 #  · NODE_ENV=development —— 确保安装 devDependencies（vite/tsc）。不用 --include=dev flag：
@@ -153,7 +153,7 @@ $env:NODE_ENV = "development"
 if ($LASTEXITCODE -ne 0) { Set-Location $RepoRoot; Write-Fail "前端依赖安装失败（npm install）。常见：npm 镜像/网络不通、磁盘空间不足。修复后重跑安装。" }
 & npm run build
 if ($LASTEXITCODE -ne 0) { Set-Location $RepoRoot; Write-Fail "前端构建失败。若提示 'tsc/vite 不是内部或外部命令'，多为 devDependencies 未装全。请在 client 目录手动执行：npm install --include=dev 然后 npm run build" }
-if (-not (Test-Path "$RepoRoot\client\dist\index.html")) { Set-Location $RepoRoot; Write-Fail "前端构建未产出 client\dist\index.html —— 详见上方报错。控制台首页会因此 404。" }
+if (-not (Test-Path "$RepoRoot\src\client\dist\index.html")) { Set-Location $RepoRoot; Write-Fail "前端构建未产出 client\dist\index.html —— 详见上方报错。控制台首页会因此 404。" }
 Set-Location $RepoRoot
 Write-Info "  前端已构建到 client\dist。"
 } else {
@@ -161,7 +161,9 @@ Write-Info "  前端已构建到 client\dist。"
 }
 
 # ── 4. 生成 server\.env ───────────────────────────────────────────────────────
-$EnvFile = "$RepoRoot\server\.env"
+$EnvFile = "$RepoRoot\src\server\.env"
+& $VenvPy "$RepoRoot\scripts\migrate-config.py" --root $RepoRoot
+if($LASTEXITCODE -ne 0){Write-Fail 'Existing configuration migration failed; refusing to generate replacement credentials.'}
 if (Test-Path $EnvFile) {
     Write-Warn ".env 已存在 — 跳过生成（如需重置请删除后重跑）。"
 } else {
@@ -181,7 +183,7 @@ if (Test-Path $EnvFile) {
     $PwHash = & $VenvPy -c "import bcrypt,sys; print(bcrypt.hashpw(sys.argv[1].encode(), bcrypt.gensalt()).decode())" $Pw
 
     @"
-# 由 scripts\install.ps1 生成，可按需修改。完整说明见 docs\CONFIG.md。
+# 由 scripts\install.ps1 生成，可按需修改。完整说明见 docs\configuration.md。
 
 IVYEA_OPS_HOST=127.0.0.1
 IVYEA_OPS_PORT=8001
@@ -274,10 +276,10 @@ if ($env:IVYEA_OPS_INSTALL_LEGACY_AI -eq "1") {
 }
 
 # ── 5. 桌面快捷方式（默认后台启动，不常驻终端窗口）──────────────────────────────
-$Launcher = "$RepoRoot\启动 IvyeaOps (后台).vbs"
-$DebugLauncher = "$RepoRoot\启动 IvyeaOps.bat"
+$Launcher = "$RepoRoot\scripts\start-hidden.vbs"
+$DebugLauncher = "$RepoRoot\scripts\start.bat"
 if (-not (Test-Path $Launcher)) {
-    Write-Warn "未找到「启动 IvyeaOps (后台).vbs」，将退回使用可见窗口启动器。"
+    Write-Warn "未找到「scripts/start-hidden.vbs」，将退回使用可见窗口启动器。"
     $Launcher = $DebugLauncher
 }
 if (-not (Test-Path $Launcher)) {
@@ -291,14 +293,14 @@ try {
     $Shortcut.TargetPath = $Launcher
     $Shortcut.WorkingDirectory = $RepoRoot
     $Shortcut.Description = "启动 IvyeaOps 工作台"
-    $ShortcutIcon = "$RepoRoot\client\public\favicon.ico"  # 圆角多尺寸 ICO，用于 Windows 桌面快捷方式
+    $ShortcutIcon = "$RepoRoot\src\client\public\favicon.ico"  # 圆角多尺寸 ICO，用于 Windows 桌面快捷方式
     if (Test-Path $ShortcutIcon) {
         $Shortcut.IconLocation = $ShortcutIcon
     }
     $Shortcut.Save()
     Write-Info "  桌面快捷方式已创建：IvyeaOps"
 } catch {
-    Write-Warn "桌面快捷方式创建失败（不影响使用），可手动双击「启动 IvyeaOps.bat」。"
+    Write-Warn "桌面快捷方式创建失败（不影响使用），可手动双击「scripts/start.bat」。"
 }
 }
 
@@ -309,10 +311,10 @@ Write-Host "  IvyeaOps 安装完成！" -ForegroundColor Green
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
 Write-Host ""
 Write-Host "  以后双击桌面「IvyeaOps」即可后台启动，不会常驻终端窗口。"
-Write-Host "  需要停止后台服务时，双击「停止 IvyeaOps.bat」。"
-Write-Host "  如果需要查看启动日志/排错，可双击「启动 IvyeaOps.bat」（可见窗口模式）。"
+Write-Host "  需要停止后台服务时，双击「scripts/stop.bat」。"
+Write-Host "  如果需要查看启动日志/排错，可双击「scripts/start.bat」（可见窗口模式）。"
 Write-Host "  想让同一局域网（同 Wi-Fi/路由器）下的其他电脑、手机也能用？"
-Write-Host "    双击「启动 IvyeaOps (局域网共享).bat」——它会自动探测本机 IP、放行防火墙，"
+Write-Host "    双击「scripts/start-lan.bat」——它会自动探测本机 IP、放行防火墙，"
 Write-Host "    并在窗口里显示让别人访问的网址，对方浏览器打开即可，无需安装任何东西。" -ForegroundColor Yellow
 Write-Host "  首次登录后会有向导，按提示填一个「全局兜底大模型」即可用全部 AI 功能。"
 Write-Host "  注意：Windows 上终端(PTY)板块不可用，其余功能均正常。"

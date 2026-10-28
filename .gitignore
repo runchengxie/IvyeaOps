@@ -40,4 +40,4 @@ dist.bak*
 
 # Local uploads
 saved-images/
-server/ci-migrate/
+src/server/ci-migrate/

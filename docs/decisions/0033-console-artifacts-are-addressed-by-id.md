@@ -77,4 +77,4 @@
 ## 相关
 
 - [0028](./0028-you-can-talk-to-a-running-turn.md) —— 接进正在跑的那一轮（这里复用了它的接流口）
-- `server/tests/test_console_files.py` —— 越权、不 inline、现场 stat 都有用例钉着
+- `src/server/tests/test_console_files.py` —— 越权、不 inline、现场 stat 都有用例钉着

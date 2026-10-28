@@ -12,7 +12,7 @@
 
 ---
 
-- [ ] `cd server && ruff check .` 通过
+- [ ] `cd src/server && ruff check .` 通过
 - [ ] `python -m pytest tests -q` 通过
 - [ ] 涉及 `app/tests` 覆盖的模块时，`python -m pytest app/tests -q` 也通过
 - [ ] 前端改动：`npx tsc --noEmit` 与 `npm run build` 通过

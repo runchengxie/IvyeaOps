@@ -5,9 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=${IVYEA_OPS_USER}
-WorkingDirectory=${INSTALL_DIR}/server
+WorkingDirectory=${INSTALL_DIR}/src/server
 Environment=PYTHONUNBUFFERED=1
-Environment=PYTHONPATH=${INSTALL_DIR}/server
+Environment=PYTHONPATH=${INSTALL_DIR}/src/server
 ExecStart=${PYTHON_BIN} -m uvicorn app.main:app --host 127.0.0.1 --port ${IVYEA_OPS_PORT} --log-level info
 Restart=on-failure
 RestartSec=5

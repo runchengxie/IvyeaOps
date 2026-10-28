@@ -1,4 +1,4 @@
-# IvyeaOps Windows x64 免 Python 安装器
+﻿# IvyeaOps Windows x64 免 Python 安装器
 #
 # 用于 GitHub Release 的 IvyeaOps-Windows-x64.zip：
 #   1. 不安装 Python / Node
@@ -43,7 +43,7 @@ IvyeaOps 本机登录信息
 
 $ServerExe = "$RepoRoot\IvyeaOpsServer.exe"
 $Launcher = $ServerExe
-$Stopper = "$RepoRoot\停止 IvyeaOps.bat"
+$Stopper = "$RepoRoot\scripts\stop.bat"
 $EnvFile = "$RepoRoot\server\.env"
 $DataDir = "$RepoRoot\data"
 $CredFile = "$DataDir\IvyeaOps 登录信息.txt"
@@ -78,7 +78,7 @@ if (Test-Path $EnvFile) {
     }
 
     @"
-# 由 scripts\install-exe.ps1 生成，可按需修改。完整说明见 docs\CONFIG.md。
+# 由 scripts\install-exe.ps1 生成，可按需修改。完整说明见 docs\configuration.md。
 IVYEA_OPS_HOST=127.0.0.1
 IVYEA_OPS_PORT=8001
 IVYEA_OPS_DEV=0
@@ -122,7 +122,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 Write-Host ""
 Write-Host "  以后双击桌面「IvyeaOps」会打开控制窗口；关闭窗口即停止服务。"
 Write-Host "  登录信息文件：$CredFile"
-Write-Host "  「停止 IvyeaOps.bat」仍作为备用停止入口。"
+Write-Host "  「scripts/stop.bat」仍作为备用停止入口。"
 Write-Host "  如需排错，看 logs\ivyeaops.err.log / logs\ivyeaops.out.log。"
 Write-Host ""
 Write-Info "正在启动控制窗口并打开浏览器..."

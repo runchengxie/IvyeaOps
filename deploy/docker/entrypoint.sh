@@ -10,7 +10,7 @@ mkdir -p /app/data
 export IVYEA_OPS_DATA_DIR=/app/data
 export IVYEA_OPS_HOST=0.0.0.0
 export IVYEA_OPS_PORT=8001
-export PYTHONPATH=/app/server
+export PYTHONPATH=/app/src/server
 export PYTHONUNBUFFERED=1
 
 # Generate password hash from ADMIN_PASSWORD env var
@@ -24,7 +24,7 @@ if [ -z "$IVYEA_OPS_SECRET" ]; then
 fi
 
 echo "  Starting backend..."
-cd /app/server
+cd /app/src/server
 python3 -m uvicorn app.main:app \
     --host 0.0.0.0 --port 8001 \
     --log-level info --no-access-log &

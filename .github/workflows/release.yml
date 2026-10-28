@@ -1,6 +1,6 @@
 name: Release (prebuilt bundle)
 
-# 打 tag（vX.Y.Z）或手动触发时：构建好前端 client/dist，打包成「已含前端的发行包」
+# 打 tag（vX.Y.Z）或手动触发时：构建好前端 src/client/dist，打包成「已含前端的发行包」
 # 并作为 GitHub Release 资产上传。普通用户下载它即可零构建安装（连 Node 都不用装）。
 
 on:
@@ -84,11 +84,11 @@ jobs:
       - name: Build Windows backend wheelhouse
         run: |
           python -m pip install --upgrade pip wheel
-          mkdir -p server/vendor/wheels
+          mkdir -p src/server/vendor/wheels
           REQ_WIN="$(mktemp)"
           python - <<'PY' > "$REQ_WIN"
           from pathlib import Path
-          for line in Path('server/requirements.txt').read_text(encoding='utf-8').splitlines():
+          for line in Path('src/server/requirements.txt').read_text(encoding='utf-8').splitlines():
               # Cross-downloading uvicorn[standard] from Linux tries to resolve uvloop,
               # even though uvloop is not used on Windows. Download uvicorn itself and
               # append the Windows-compatible standard extras explicitly.
@@ -105,13 +105,13 @@ jobs:
           PY
           # A couple of transitive dependencies are source-only on PyPI but pure
           # Python; build universal wheels for them so offline install stays wheel-only.
-          python -m pip wheel --wheel-dir server/vendor/wheels docopt==0.6.2 sgmllib3k==1.0.0
+          python -m pip wheel --wheel-dir src/server/vendor/wheels docopt==0.6.2 sgmllib3k==1.0.0
           # Pre-download Windows x64 wheels so the Windows installer can install
           # backend deps offline / semi-offline. If users install from source or a
           # wheel is missing, scripts/install.ps1 falls back to normal online pip.
           python -m pip download \
-            --dest server/vendor/wheels \
-            --find-links server/vendor/wheels \
+            --dest src/server/vendor/wheels \
+            --find-links src/server/vendor/wheels \
             --only-binary=:all: \
             --platform win_amd64 \
             --implementation cp \
@@ -121,11 +121,11 @@ jobs:
           # requirements has a Python <3.10 compatibility marker; the bundled
           # wheelhouse targets the installer default Python 3.12, so that marker
           # is harmless if present in the cache.
-          test -n "$(find server/vendor/wheels -maxdepth 1 -type f -name '*.whl' -print -quit)"
-          du -sh server/vendor/wheels
+          test -n "$(find src/server/vendor/wheels -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          du -sh src/server/vendor/wheels
 
       - name: Build frontend
-        working-directory: client
+        working-directory: src/client
         env:
           NODE_ENV: development   # 装 devDependencies（不用会触发部分 npm 版本崩溃的 --include=dev flag）
         run: |
@@ -151,18 +151,18 @@ jobs:
           printf '%s\n' "$TAG" > VERSION
           STAGE="staging/IvyeaOps"
           mkdir -p "$STAGE"
-          # 复制整棵仓库（含刚构建出的 client/dist），排除开发/运行期产物。
+          # 复制整棵仓库（含刚构建出的 src/client/dist），排除开发/运行期产物。
           rsync -a \
             --exclude='.git' \
             --exclude='staging' \
-            --exclude='client/node_modules' \
-            --exclude='server/.venv' \
+            --exclude='src/client/node_modules' \
+            --exclude='src/server/.venv' \
             --exclude='data' \
             --exclude='__pycache__' \
             --exclude='*.pyc' \
-            --exclude='server/.env' \
+            --exclude='src/server/.env' \
             ./ "$STAGE/"
-          test -f "$STAGE/client/dist/index.html"   # 确保预构建前端进了包
+          test -f "$STAGE/src/client/dist/index.html"   # Source bundles keep src/.
           # Ship IvyeaAgent source so install.sh / install-components.ps1 install it
           # OFFLINE from the bundle (no git/proxy failures at the user's end).
           # 版本由 agent-ref 作业统一解析（见文件顶部那段注释），三个平台的包共用同一个。
@@ -193,9 +193,9 @@ jobs:
             $0 ~ "^## \\[" tag "\\]" { flag = 1; next }
             flag && /^## \[/ { exit }
             flag { print }
-          ' CHANGELOG.md > CHANGELOG_SECTION.md
+          ' docs/changelog.md > CHANGELOG_SECTION.md
           if [ ! -s CHANGELOG_SECTION.md ]; then
-            echo "::error::CHANGELOG.md 里没有 $TAG 这一节。发版前要把 Unreleased 改成本版号。"
+            echo "::error::docs/changelog.md 里没有 $TAG 这一节。发版前要把 Unreleased 改成本版号。"
             exit 1
           fi
           echo "取到 $(wc -l < CHANGELOG_SECTION.md) 行版本说明"
@@ -241,19 +241,19 @@ jobs:
           python-version: '3.12'
 
       - name: Build frontend
-        working-directory: client
+        working-directory: src/client
         env:
           NODE_ENV: development
         run: |
           npm ci --no-audit --no-fund
           npm run build
-          if (!(Test-Path dist/index.html)) { throw "client/dist/index.html missing" }
+          if (!(Test-Path dist/index.html)) { throw "src/client/dist/index.html missing" }
 
       - name: Build backend exe
         shell: pwsh
         run: |
           python -m pip install --upgrade pip wheel pyinstaller
-          python -m pip install -r server/requirements.txt
+          python -m pip install -r src/server/requirements.txt
           # Bundle IvyeaAgent INTO the exe so the 免-Python package needs no
           # separate pip/Python/git install — the #1 deploy-failure source.
           # 版本由 agent-ref 作业统一解析（见文件顶部那段注释），三个平台的包共用同一个。
@@ -282,7 +282,7 @@ jobs:
           try { python -c "import winpty"; $piArgs += @("--collect-all","winpty"); Write-Host "bundling pywinpty (ConPTY)" }
           catch { Write-Host "winpty not importable; building without ConPTY bundle" }
           $piArgs += @("--collect-all","ivyea_agent","--collect-submodules","ivyea_agent")
-          $piArgs += @("--icon","client/public/favicon.ico","--name","IvyeaOpsServer","--paths","server","server/ivyeaops_server.py")
+          $piArgs += @("--icon","src/client/public/favicon.ico","--name","IvyeaOpsServer","--paths","src/server","src/server/ivyeaops_server.py")
           pyinstaller @piArgs
           if (!(Test-Path dist/IvyeaOpsServer/IvyeaOpsServer.exe)) { throw "IvyeaOpsServer.exe missing" }
           # Smoke: the exe must run the bundled agent serve from `agent-serve`.
@@ -316,8 +316,8 @@ jobs:
           # server\, client\, …). sys.executable.parent then resolves to the bundle
           # root exactly as it did for onefile, so runtime_root()/path logic is unchanged.
           Copy-Item -Recurse dist/IvyeaOpsServer/* "$stage/"
-          Copy-Item -Recurse client/dist "$stage/client/dist"
-          Copy-Item -Recurse client/public "$stage/client/public"
+          Copy-Item -Recurse src/client/dist "$stage/client/dist"
+          Copy-Item -Recurse src/client/public "$stage/client/public"
           Copy-Item -Recurse docs "$stage/docs"
           # Skills are seeded into ~/.hermes/skills on startup (ASIN/广告审计、Listing
           # 板块依赖它们);the frozen exe reads them from next to itself, so they MUST
@@ -330,8 +330,11 @@ jobs:
           Copy-Item scripts/install-components.ps1 "$stage/scripts/install-components.ps1"
           Copy-Item scripts/update-exe.ps1 "$stage/scripts/update-exe.ps1"
           Copy-Item scripts/windows-action-gui.ps1 "$stage/scripts/windows-action-gui.ps1"
-          Copy-Item "停止 IvyeaOps.bat" "$stage/停止 IvyeaOps.bat"
-          Copy-Item "更新 IvyeaOps Windows x64.bat" "$stage/更新 IvyeaOps Windows x64.bat"
+          foreach ($entry in @('manage.ps1','start-console.ps1','start-hidden.ps1','start-hidden.vbs','start.bat','start-lan.bat','install.bat','install.ps1','install-exe.ps1','migrate-config.py')) {
+            Copy-Item "scripts/$entry" "$stage/scripts/$entry"
+          }
+          Copy-Item "scripts/stop.bat" "$stage/scripts/stop.bat"
+          Copy-Item "scripts/update-bundle.bat" "$stage/scripts/update-bundle.bat"
           if (Test-Path README.md) { Copy-Item README.md "$stage/README.md" }
           Compress-Archive -Path staging/IvyeaOps -DestinationPath "IvyeaOps-Windows-x64-$tag.zip" -Force
           Copy-Item "IvyeaOps-Windows-x64-$tag.zip" "IvyeaOps-Windows-x64.zip"
@@ -365,18 +368,18 @@ jobs:
           python-version: '3.12'
 
       - name: Build frontend
-        working-directory: client
+        working-directory: src/client
         env:
           NODE_ENV: development
         run: |
           npm ci --no-audit --no-fund
           npm run build
-          test -f dist/index.html || { echo "client/dist/index.html missing"; exit 1; }
+          test -f dist/index.html || { echo "src/client/dist/index.html missing"; exit 1; }
 
       - name: Build backend .app (PyInstaller --windowed, embeds Python)
         run: |
           python -m pip install --upgrade pip wheel pyinstaller
-          python -m pip install -r server/requirements.txt
+          python -m pip install -r src/server/requirements.txt
           # Bundle IvyeaAgent into the .app so it needs no separate install.
           # 版本由 agent-ref 作业统一解析（见文件顶部那段注释），三个平台的包共用同一个。
           # **这个作业就是 v1.6.0 那次悄悄回退到 main 的当事人**：它自己去问 API、
@@ -395,7 +398,7 @@ jobs:
           # below; _runtime_root() resolves there on darwin.
           pyinstaller --noconfirm --clean --onedir --windowed \
             --collect-all ivyea_agent --collect-submodules ivyea_agent \
-            --name IvyeaOps --paths server server/ivyeaops_server.py
+            --name IvyeaOps --paths src/server src/server/ivyeaops_server.py
           test -d "dist/IvyeaOps.app" || { echo "IvyeaOps.app missing"; exit 1; }
           # Smoke: the .app binary must run the bundled agent serve.
           "dist/IvyeaOps.app/Contents/MacOS/IvyeaOps" agent-serve --host 127.0.0.1 --port 8799 &
@@ -419,8 +422,8 @@ jobs:
           tag="${{ steps.tag.outputs.tag }}"
           res="dist/IvyeaOps.app/Contents/Resources"
           mkdir -p "$res/client"
-          cp -R client/dist "$res/client/dist"
-          cp -R client/public "$res/client/public"
+          cp -R src/client/dist "$res/client/dist"
+          cp -R src/client/public "$res/client/public"
           cp -R docs "$res/docs"
           cp -R skills "$res/skills"
           [ -d amazon-image-workflow ] && cp -R amazon-image-workflow "$res/amazon-image-workflow" || true

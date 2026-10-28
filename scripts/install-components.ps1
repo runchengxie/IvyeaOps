@@ -1,4 +1,4 @@
-# IvyeaOps optional component installer (Windows / PowerShell 5.1+)
+﻿# IvyeaOps optional component installer (Windows / PowerShell 5.1+)
 #
 # Components:
 #   all         - IvyeaAgent runtime (default)
@@ -18,6 +18,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptRoot
+$ServerRoot = if(Test-Path (Join-Path $RepoRoot "src/server")){Join-Path $RepoRoot "src/server"}else{Join-Path $RepoRoot "server"}
 
 function Write-Info($msg) { Write-Host "[IvyeaOps] $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "[IvyeaOps] WARN: $msg" -ForegroundColor Yellow }
@@ -30,7 +31,7 @@ function Refresh-Path {
         "$env:USERPROFILE\.hermes\bin",
         "$env:USERPROFILE\.hermes\node\bin",
         "$env:USERPROFILE\.ivyeaops\node",
-        "$RepoRoot\server\.venv\Scripts",
+        "$ServerRoot\.venv\Scripts",
         "$env:LOCALAPPDATA\Programs\Ollama",
         "$env:USERPROFILE\.local\bin"
     )
@@ -140,13 +141,13 @@ function Install-IvyeaAgent {
     if (Test-Cmd "ivyea") {
         Write-Info "IvyeaAgent already installed: $((Get-Command ivyea).Source)"
     } else {
-        $VenvPy = Join-Path $RepoRoot "server\.venv\Scripts\python.exe"
+        $VenvPy = Join-Path $ServerRoot ".venv\Scripts\python.exe"
         if (-not (Test-Path $VenvPy)) {
             $python = Get-Command python -ErrorAction SilentlyContinue
             if (-not $python) { $python = Get-Command py -ErrorAction SilentlyContinue }
             if (-not $python) { throw "Python not found. Run scripts\install.ps1 first or install Python 3.9+." }
             Write-Info "Creating server virtualenv for IvyeaAgent..."
-            & $python.Source -m venv (Join-Path $RepoRoot "server\.venv")
+            & $python.Source -m venv (Join-Path $ServerRoot ".venv")
         }
         if (-not (Test-Path $VenvPy)) { throw "server virtualenv was not created: $VenvPy" }
 
@@ -197,7 +198,7 @@ function Install-IvyeaAgent {
 
     $ivyea = Get-Command ivyea -ErrorAction SilentlyContinue
     if (-not $ivyea) {
-        $fallback = Join-Path $RepoRoot "server\.venv\Scripts\ivyea.exe"
+        $fallback = Join-Path $ServerRoot ".venv\Scripts\ivyea.exe"
         if (Test-Path $fallback) { $ivyea = [pscustomobject]@{ Source = $fallback } }
     }
     if (-not $ivyea) { throw "ivyea command not found after installation." }

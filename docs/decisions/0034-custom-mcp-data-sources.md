@@ -9,7 +9,7 @@
 工作台的市场数据源原本只有三家写死的：Sorftime、卖家精灵、SIF。它们各有一个专用的
 后端服务模块（`sorftime_service` / `sellersprite_service` / `sif_service`），工具名、
 入参、返回字段全部按各自服务器的真实行为硬编码；前端的可选清单写在
-`client/src/lib/dataSource.ts` 的常量里，后端的合法值写在各路由的 `_DATA_SOURCES`
+`src/client/src/lib/dataSource.ts` 的常量里，后端的合法值写在各路由的 `_DATA_SOURCES`
 集合里。
 
 问题有两个：

@@ -11,13 +11,14 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 - 改变了某个东西的边界（谁负责什么、数据从哪来）
 - 踩了一个坑，而这个坑的根因值得让未来的自己记住
 
-日常改 bug、加功能不用写 —— 那些看 [CHANGELOG](../../CHANGELOG.md) 和
+日常改 bug、加功能不用写 —— 那些看 [CHANGELOG](../../docs/changelog.md) 和
 维护者本机私有的开发时间线。
 
 ## 索引
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0040](./0040-source-layout-and-canonical-docs.md) | Source layout and canonical English documentation | 2026-10-28 |
 | [0039](./0039-emag-evidence-workspace.md) | eMAG 页面复用快照，无头运行与模型解耦 | 2026-10-28 |
 | [0038](./0038-drop-unused-psd-tools.md) | 移除未使用的 psd-tools，保留 Python 3.9 兼容性 | 2026-10-28 |
 | [0037](./0037-emag-readonly-cli.md) | eMAG 采集使用独立只读 CLI | 2026-10-28 |

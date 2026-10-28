@@ -17,9 +17,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "server"))
+sys.path.insert(0, str(ROOT / "src" / "server"))
 
-WORK = ROOT / "server" / "ci-migrate"
+WORK = ROOT / "src" / "server" / "ci-migrate"
 DATA = WORK / "data"
 PASSPHRASE = "ci-migration-passphrase"
 

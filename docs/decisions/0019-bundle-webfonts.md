@@ -24,7 +24,7 @@
 
 ## 决策
 
-把字体文件**直接作为静态资源放进 `client/public/fonts/`**，用 `@font-face` 声明，
+把字体文件**直接作为静态资源放进 `src/client/public/fonts/`**，用 `@font-face` 声明，
 不走 npm、不走 CDN：
 
 - `inter-latin-var.woff2`（48KB）—— 拉丁可变字重，族名 `"Inter Web"`。
@@ -61,6 +61,6 @@
   现在是 `unicode-range:U+0020-007E,U+00A0-00FF`，标点仍旧由后面的中文字体出。
 - **服务端要注册 MIME**：`.woff2` 不在本机 stdlib 的 `mimetypes` 表里，`FileResponse`
   会猜成 `text/plain`。浏览器不看 MIME 照样加载字体，但任何按 content-type 做判断的
-  代理或安全策略看到的都是假的。已在 `server/app/main.py` 顶部注册，并给 `/fonts/*`
+  代理或安全策略看到的都是假的。已在 `src/server/app/main.py` 顶部注册，并给 `/fonts/*`
   发一年的 immutable 缓存（文件名自带版本，换字体就换名字）。
 - 换字体文件时**必须改文件名**，否则老用户会被 immutable 缓存钉在旧文件上。
