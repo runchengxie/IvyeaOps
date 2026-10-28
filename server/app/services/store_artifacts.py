@@ -9,6 +9,8 @@ import json
 import os
 import re
 import secrets
+import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -76,13 +78,27 @@ def _write_new(path: Path, payload: dict) -> None:
         temporary.unlink(missing_ok=True)
 
 
+@contextmanager
+def snapshot_guard():
+    root = _root()
+    root.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(root / 'publication-lock.sqlite3', timeout=30)
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        yield
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def import_snapshot(payload: dict) -> dict:
     snapshot = StoreSnapshot.model_validate(payload).model_dump(mode='json')
     # Append snapshots rather than overwrite evidence used by older reports.
     directory = _root() / 'snapshots' / snapshot['store_id']
-    snapshot_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f') + '_' + secrets.token_hex(4)
-    snapshot['snapshot_id'] = snapshot_id
-    _write_new(directory / f'{snapshot_id}.json', snapshot)
+    with snapshot_guard():
+        snapshot_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f') + '_' + secrets.token_hex(4)
+        snapshot['snapshot_id'] = snapshot_id
+        _write_new(directory / f'{snapshot_id}.json', snapshot)
     return snapshot
 
 

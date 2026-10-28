@@ -1,0 +1,31 @@
+import { useEffect, useState, useRef } from 'react';
+import { api } from '../../api/client';
+
+type Entry = { issue_id:string; id:number|string; reason:string; subject?:{id:number|string;part_number?:string;reason:string}; platform_status?:unknown; part_number?:string; name?:string; general_stock:number|null; state:string; revision:number; history:{state:string;note:string;actor:string;at:string}[] };
+type Board = {store_id:string;snapshot_id:string;captured_at:string;source:string;coverage:string[];limitations:string[];summary:Record<string,unknown>;issues:Entry[];records:(Entry & {snapshot_id:string;review_snapshot_id?:string;issue_still_present?:boolean})[]};
+const labels:Record<string,string>={pending:'待核实',proposed:'已拟方案',approved:'已批准',executed:'已执行（人工记录）',reviewed:'已复查',invalid_price:'价格无效',documentation_rejected:'资料拒绝',blocked:'平台封锁'};
+const next:Record<string,string>={pending:'proposed',proposed:'approved',approved:'executed',executed:'reviewed'};
+
+export default function EmagOperations(){
+  const request=useRef(0);
+  const [stores,setStores]=useState<{store_id:string}[]>([]),[store,setStore]=useState('');
+  const [board,setBoard]=useState<Board|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+  const [selected,setSelected]=useState<(Entry & {snapshot_id?:string})|null>(null),[note,setNote]=useState('');
+  useEffect(()=>{api.get('/emag/stores').then(r=>{setStores(r.data);if(r.data.length)setStore(r.data[0].store_id);}).catch(()=>setError('无法读取店铺，请确认管理员权限。'));},[]);
+  async function load(){if(!store)return;const version=++request.current;setSelected(null);setNote('');setError('');setBoard(null);try{const result=await api.get(`/emag/stores/${encodeURIComponent(store)}`);if(version===request.current)setBoard(result.data);}catch{if(version===request.current)setError('读取失败，请重试。');}}
+  useEffect(()=>{setSelected(null);void load();},[store]);
+  async function save(){if(!selected||!board)return;setBusy(true);setError('');try{await api.post(`/emag/stores/${encodeURIComponent(store)}/issues/${selected.issue_id}`,{snapshot_id:selected.snapshot_id,review_snapshot_id:board.snapshot_id,state:next[selected.state],revision:selected.revision,note});setSelected(null);setNote('');await load();}catch(e:any){setError(e.response?.data?.detail||'保存失败，请重新读取后重试。');}finally{setBusy(false);}}
+  return <div style={{padding:24,maxWidth:1400,margin:'auto',fontFamily:'system-ui,sans-serif',fontSize:14,lineHeight:1.6}}>
+    <h1>eMAG 店铺巡检</h1><p>从商品异常到人工处理、再用新快照复查。</p>
+    <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}><label>店铺 <select aria-label="店铺" disabled={busy} value={store} onChange={e=>setStore(e.target.value)}>{stores.map(s=><option key={s.store_id}>{s.store_id}</option>)}</select></label><button className="tbtn" disabled={busy} onClick={()=>void load()}>重新读取已采集资料</button></div>
+    {error&&<p role="alert">{error}</p>}{!stores.length&&!error&&<p>暂无商品快照。完成 eMAG 只读采集后即可在这里查看。</p>}
+    {board&&<><p>采集时间：{new Date(board.captured_at).toLocaleString()} · 商品记录：{String(board.summary.offers)} · 价格无效：{String(board.summary.invalid_price)} · 有库存且价格无效：{String(board.summary.invalid_price_with_stock)}</p>
+      <details><summary>证据范围与限制</summary><p>版本：{board.snapshot_id}</p><p>来源：{board.source}</p><ul>{board.limitations.map(x=><li key={x}>{x}</li>)}</ul></details>
+      <p>订单、退款、费用和独立 FBE 库存明细：未采集。此页面保存本地处理记录；批准不会自动改价或提交商品。</p>
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['商品 / SKU','异常','库存字段','进度','操作'].map(x=><th key={x} style={{textAlign:'left',padding:12}}>{x}</th>)}</tr></thead><tbody>{board.issues.map(i=><tr key={i.issue_id}><td style={{padding:12,maxWidth:500}}>{i.name||i.id}<br/><small>{i.part_number||i.id}</small></td><td>{labels[i.reason]||i.reason}</td><td>{i.general_stock??'未知'}</td><td>{labels[i.state]}</td><td><button className="tbtn" onClick={()=>{setSelected({...i,snapshot_id:board.snapshot_id});setNote('');}}>查看 / 记录</button></td></tr>)}</tbody></table></div>
+      {!board.issues.length&&<p>当前快照未观察到价格无效、资料拒绝或 Blocked 标记；不代表所有经营风险已排除。</p>}
+      <h2>处理记录（最多 100 条）</h2>{board.records.map(r=><div key={r.snapshot_id+r.issue_id} style={{padding:'12px 0'}}><strong>{r.subject?.part_number||r.subject?.id||r.issue_id} · {labels[r.subject?.reason||'']||''} · {labels[r.state]}</strong> · {r.snapshot_id}<p>{r.history.at(-1)?.note}</p>{r.review_snapshot_id&&<p>复查版本：{r.review_snapshot_id} · 异常{r.issue_still_present?'仍存在':'本次未观察到'}</p>}{r.state==='executed'&&r.snapshot_id!==board.snapshot_id&&<button className="tbtn" onClick={()=>{setSelected(r);setNote('');}}>用当前快照记录复查</button>}</div>)}
+      {selected&&<section aria-label="处理记录" style={{padding:20,border:'1px solid currentColor',marginTop:20}}><h2>{selected.part_number||selected.subject?.part_number||selected.subject?.id||selected.id||selected.issue_id}</h2><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(selected.platform_status,null,2)}</pre><p>当前：{labels[selected.state]}。下一步：{labels[next[selected.state]]||'流程已结束'}。</p><p>方案请写明字段、旧值、新值与理由；执行记录请注明实际人工操作。复查不等于问题已解决。</p>{selected.history.map((h,i)=><p key={i}>{labels[h.state]} · {h.note}</p>)}<textarea aria-label="处理说明" rows={5} maxLength={4000} value={note} onChange={e=>setNote(e.target.value)} style={{width:'100%'}}/><div style={{display:'flex',gap:12,marginTop:12}}><button className="tbtn" disabled={busy||!note.trim()||!next[selected.state]} onClick={()=>void save()}>保存本地记录</button><button className="tbtn" onClick={()=>setSelected(null)}>关闭</button></div></section>}
+    </>}
+  </div>;
+}

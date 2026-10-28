@@ -185,6 +185,8 @@ const DEMO_PLAN = {
 };
 
 const ROUTES: Array<[string, Canned | ((url: string) => Canned)]> = [
+  ["/emag/stores/demo-ro", {store_id:"demo-ro",snapshot_id:"demo-v1",captured_at:"2026-10-28T00:00:00Z",source:"synthetic-harness",coverage:["offers"],limitations:["Synthetic UI fixture; not store evidence"],summary:{offers:1,invalid_price:1,invalid_price_with_stock:1},issues:[{issue_id:"demo-issue",id:1,reason:"invalid_price",part_number:"DEMO-SKU",name:"Demo product",general_stock:3,state:"pending",revision:0,history:[]}],records:[]}],
+  ["/emag/stores", [{store_id:"demo-ro"}]],
   /* ── 运营驾驶舱 / 用户管理 ────────────────────────────────────────────────
      这几条以前没有，兜底的 `{}` 让 MarketTraffic 的 `items.filter` 直接把整页
      炸成「页面渲染出错」—— 于是驾驶舱和用户管理在验证台上根本画不出来，
