@@ -1650,11 +1650,33 @@ export function installMockApi(): void {
   // 错误照实显示，绝不能被 Gate 当成"没配置"藏掉。
   const lxErr = new URLSearchParams(location.search).get("lxerr") === "1";
 
-  const slowReply = async (config: { url?: string; baseURL?: string }) => {
+  let emagApproved=false,agentDecided=false;
+  const slowReply = async (config: { url?: string; baseURL?: string;data?:unknown;method?:string }) => {
     const ms = delayFor((config.baseURL || "") + (config.url || ""));
     if (ms) await new Promise((r) => setTimeout(r, ms));
     const full = (config.baseURL || "/api").replace(/^\/api/, "") + (config.url || "");
     ((window as any).__harnessRequests ||= []).push(full);
+    const approvalCase=new URLSearchParams(location.search).get('emagapproval');
+    const agentCase=new URLSearchParams(location.search).get('agentapproval');
+    if(full==='/ivyea-agent/console/approvals/pending')return {...reply(config),data:{ok:true,approvals:agentCase&&!agentDecided?[{request_id:'synthetic-agent',session_id:'demo-session',title:'Synthetic Agent operation',op_type:'command',requested_at:Date.now()/1000}]:[]}};
+    if(full==='/ivyea-agent/chat/permission'&&agentCase){
+      if(['network','gone'].includes(agentCase))throw Object.assign(new Error('Synthetic Agent fixture failure'),{response:{status:agentCase==='gone'?409:503}});
+      if(agentCase==='not-ok')return {...reply(config),data:{ok:false,error:'Synthetic Agent did not accept'}};
+      agentDecided=true;return {...reply(config),data:{ok:true}};
+    }
+    if(full==='/emag/stores'&&approvalCase==='source-error')throw Object.assign(new Error('Synthetic source unavailable'),{response:{status:503}});
+    if(full==='/emag/stores'&&approvalCase==='partial')return {...reply(config),data:[{store_id:'demo-ro'},{store_id:'failed-ro'}]};
+    if(full==='/emag/stores'&&approvalCase==='context')return {...reply(config),data:[{store_id:'first-ro'},{store_id:'demo-ro'}]};
+    if(full==='/emag/stores/failed-ro'&&approvalCase==='partial')throw Object.assign(new Error('Synthetic store failure'),{response:{status:503}});
+    if(full==='/emag/stores/demo-ro'&&approvalCase){
+      const base=reply(config) as any;
+      return {...base,data:{...base.data,issues:base.data.issues.map((i:any)=>({...i,state:emagApproved?'approved':'proposed',revision:1,history:[{state:'proposed',note:'Synthetic proposal',actor:'test-operator',at:'2026-10-28T00:00:00Z'}]})),records:[{...base.data.issues[0],state:'proposed',snapshot_id:'older-source',history:[{state:'proposed',note:'Synthetic old proposal',actor:'test-operator',at:'2026-10-27T00:00:00Z'}]}]}};
+    }
+    if(full==='/emag/stores/demo-ro/issues/demo-issue'&&config.method==='post'&&approvalCase){
+      (window as any).__lastEmagApproval=JSON.parse(String(config.data||'{}'));
+      if(['stale','network'].includes(approvalCase))throw Object.assign(new Error('Synthetic approval fixture failure'),{response:{status:approvalCase==='stale'?409:503}});
+      emagApproved=true;return {...reply(config),data:{state:'approved',revision:2}};
+    }
     const emagCase=new URLSearchParams(location.search).get('emagstatus');
     if(full==='/emag/stores'&&emagCase==='empty')return {...reply(config),data:[]};
     if((full==='/emag/stores'&&emagCase==='offline')||(full.endsWith('/job')&&['no-job','job-error'].includes(emagCase||''))){

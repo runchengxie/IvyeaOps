@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { api } from '../../api/client';
+import { useSearchParams } from 'react-router-dom';
 
 type Entry = { issue_id:string; id:number|string; reason:string; subject?:{id:number|string;part_number?:string;reason:string}; platform_status?:unknown; part_number?:string; name?:string; general_stock:number|null; state:string; revision:number; history:{state:string;note:string;actor:string;at:string}[] };
 type Board = {store_id:string;snapshot_id:string;captured_at:string;source:string;coverage:string[];limitations:string[];summary:Record<string,unknown>;commercial_summary?:{orders_fbe_count:number;orders_seller_count:number;returns_fbe_count:number;returns_seller_count:number;invoice_count:number;invoice_amount_unknown:number;window:{start:string;end:string};inventory:{general_stock_total:number|null;aging_total:number|null;stock_rows_unknown:number;aging_rows_unknown:number;mismatched_skus:number;aging_bands:Record<string,number>};invoice_totals:{category:string;currency:string;amount_as_reported:string}[]};issues:Entry[];records:(Entry & {snapshot_id:string;review_snapshot_id?:string;issue_still_present?:boolean})[]};
@@ -7,11 +8,13 @@ const labels:Record<string,string>={pending:'待核实',proposed:'已拟方案',
 const next:Record<string,string>={pending:'proposed',proposed:'approved',approved:'executed',executed:'reviewed'};
 
 export default function EmagOperations(){
+  const [params]=useSearchParams();
+  const requestedStore=params.get('store');
   const request=useRef(0);
   const [stores,setStores]=useState<{store_id:string}[]>([]),[store,setStore]=useState('');
   const [board,setBoard]=useState<Board|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const [selected,setSelected]=useState<(Entry & {snapshot_id?:string})|null>(null),[note,setNote]=useState('');
-  useEffect(()=>{api.get('/emag/stores').then(r=>{setStores(r.data);if(r.data.length)setStore(r.data[0].store_id);}).catch(()=>setError('无法读取店铺，请确认管理员权限。'));},[]);
+  useEffect(()=>{let alive=true;api.get('/emag/stores').then(r=>{if(!alive)return;setStores(r.data);setStore(r.data.find((s:{store_id:string})=>s.store_id===requestedStore)?.store_id||r.data[0]?.store_id||'');}).catch(()=>{if(alive)setError('无法读取店铺，请确认管理员权限。');});return()=>{alive=false;};},[requestedStore]);
   async function load(){if(!store)return;const version=++request.current;setSelected(null);setNote('');setError('');setBoard(null);try{const result=await api.get(`/emag/stores/${encodeURIComponent(store)}`);if(version===request.current)setBoard(result.data);}catch{if(version===request.current)setError('读取失败，请重试。');}}
   useEffect(()=>{setSelected(null);void load();},[store]);
   async function save(){if(!selected||!board)return;setBusy(true);setError('');try{await api.post(`/emag/stores/${encodeURIComponent(store)}/issues/${selected.issue_id}`,{snapshot_id:selected.snapshot_id,review_snapshot_id:board.snapshot_id,state:next[selected.state],revision:selected.revision,note});setSelected(null);setNote('');await load();}catch(e:any){setError(e.response?.data?.detail||'保存失败，请重新读取后重试。');}finally{setBusy(false);}}
