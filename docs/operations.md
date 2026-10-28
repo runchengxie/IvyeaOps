@@ -17,6 +17,7 @@ From `src/client`:
 ```bash
 npm run typecheck
 npm run test:i18n
+npm run test:render
 node scripts/check-errtext.mjs
 npm run build
 ```

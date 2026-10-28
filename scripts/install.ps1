@@ -1,7 +1,7 @@
 ﻿# IvyeaOps 一键安装（Windows / PowerShell 5.1+）
 #
 # 做的事：
-#   1. 自动检测 Python 3.9+ 和 Node 18+；缺失则用 winget 自动安装
+#   1. 自动检测 Python 3.9+ 和 Node 20+；缺失则用 winget 自动安装
 #   2. 创建独立虚拟环境 server\.venv 并安装后端依赖
 #   3. 构建前端
 #   4. 生成 server\.env（随机密钥 + 管理员密码哈希；密码留空则自动生成并显示）
@@ -47,7 +47,7 @@ function Find-Node {
     if (-not (Test-Cmd "node")) { return $false }
     try {
         $v = & node --version 2>&1
-        if ($v -match "v(\d+)" -and [int]$Matches[1] -ge 18) { return $true }
+        if ($v -match "v(\d+)" -and [int]$Matches[1] -ge 20) { return $true }
     } catch {}
     return $false
 }
@@ -75,12 +75,12 @@ if (-not $Python) {
 
 if (-not $HasPrebuilt -and -not (Find-Node)) {
     if ($HasWinget) {
-        Write-Warn "未检测到 Node.js 18+，正在用 winget 自动安装（约 1-2 分钟）..."
+        Write-Warn "未检测到 Node.js 20+，正在用 winget 自动安装（约 1-2 分钟）..."
         winget install -e --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
         Refresh-Path
     }
     if (-not (Find-Node)) {
-        Write-Fail "需要 Node.js 18+。请从 https://nodejs.org/ 安装，重开终端后重试。"
+        Write-Fail "需要 Node.js 20+。请从 https://nodejs.org/ 安装，重开终端后重试。"
     }
 }
 

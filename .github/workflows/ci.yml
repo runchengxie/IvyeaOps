@@ -216,6 +216,9 @@ jobs:
       - name: Typecheck
         working-directory: src/client
         run: npm run typecheck
+      - name: Render contracts
+        working-directory: src/client
+        run: npm run test:render
       - name: Locale contracts
         working-directory: src/client
         run: npm run test:i18n

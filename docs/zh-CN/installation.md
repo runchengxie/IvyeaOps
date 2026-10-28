@@ -2,7 +2,7 @@
 
 [英文权威版本](../installation.md)
 
-安装脚本接受 Python 3.9+ 和 Node.js 18+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 配置 Linux、Windows、macOS，不代表某个提交已在这些环境实际运行。
+安装脚本接受 Python 3.9+ 和 Node.js 20+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 配置 Linux、Windows、macOS，不代表某个提交已在这些环境实际运行。
 
 运行环境、test 和可选 MCP test requirements 分别位于 `src/server`。安装/发布流程另行安装 IvyeaAgent，选中的 release 与本机已安装版本可能不同。不假设 fork 已有二进制发行包。
 

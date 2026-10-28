@@ -17,7 +17,7 @@ Purchase costs, profit, recommended selling prices, market-wide search volume an
 
 ## Run from source
 
-Source code is in `src/client` and `src/server`. Installers accept Python 3.9+ and Node.js 18+; CI builds use Node.js 22. The locally verified environment is Windows, Python 3.12.13, Node.js 24.22.1 and an installed `ivyea-agent` 1.16.9. Other CI matrix environments are configured, not independently verified by that local run.
+Source code is in `src/client` and `src/server`. Installers accept Python 3.9+ and Node.js 20+; CI builds use Node.js 22. The locally verified environment is Windows, Python 3.12.13, Node.js 24.22.1 and an installed `ivyea-agent` 1.16.9. Other CI matrix environments are configured, not independently verified by that local run.
 
 Windows:
 

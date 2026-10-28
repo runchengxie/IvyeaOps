@@ -17,6 +17,7 @@ eMAG 计划准备页不注册任务。通用 Agent 调度器是另一执行路�
 ```bash
 npm run typecheck
 npm run test:i18n
+npm run test:render
 node scripts/check-errtext.mjs
 npm run build
 ```

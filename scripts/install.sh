@@ -51,11 +51,11 @@ if [ "$PREBUILT" = 0 ]; then
   NODE=""
   if command -v node &>/dev/null; then
     node_major=$(node -e "process.stdout.write(String(process.versions.node.split('.')[0]))")
-    if [ "$node_major" -ge 18 ]; then
+    if [ "$node_major" -ge 20 ]; then
       NODE="node"
     fi
   fi
-  [ -n "$NODE" ] || die "Node.js 18+ is required. Download from https://nodejs.org/ and re-run."
+  [ -n "$NODE" ] || die "Node.js 20+ is required. Download from https://nodejs.org/ and re-run."
   command -v npm &>/dev/null || die "npm not found. Ensure Node.js is properly installed."
 fi
 
