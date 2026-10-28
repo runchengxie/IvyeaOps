@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Updated frontend dependencies to address security advisories. Source builds now require Node.js 20 or later; upgrade Node before running the installer.
+
 ### 新增
 
 - Moved source code to `src/client` and `src/server`, consolidated English management entry points in `scripts`, and preserved source/frozen configuration compatibility. See [repository-layout.md](repository-layout.md).

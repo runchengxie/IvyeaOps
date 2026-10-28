@@ -4,7 +4,7 @@
 
 ## Requirements and build types
 
-Installers accept Python 3.9+ and Node.js 18+; CI builds use Node.js 22. This audit ran locally on Windows with Python 3.12.13 and Node.js 24.22.1. CI defines Linux, Windows and macOS jobs, but a configured job is not evidence that it ran for a particular commit.
+Installers accept Python 3.9+ and Node.js 20+; CI builds use Node.js 22. This audit ran locally on Windows with Python 3.12.13 and Node.js 24.22.1. CI defines Linux, Windows and macOS jobs, but a configured job is not evidence that it ran for a particular commit.
 
 The backend runtime requirements, test requirements and optional MCP test requirements are separate files under `src/server`. IvyeaAgent is installed separately by installation/release workflows. Its selected release and installed version can differ. Do not assume the fork has a published binary release.
 

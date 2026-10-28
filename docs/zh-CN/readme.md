@@ -17,7 +17,7 @@
 
 ## 从源码运行
 
-源码位于 `src/client` 和 `src/server`。安装脚本接受 Python 3.9+ 和 Node.js 18+，CI 构建使用 Node.js 22。本次本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1、已安装的 `ivyea-agent` 1.16.9。CI 中配置的平台矩阵不等于本机已验证所有环境。
+源码位于 `src/client` 和 `src/server`。安装脚本接受 Python 3.9+ 和 Node.js 20+，CI 构建使用 Node.js 22。本次本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1、已安装的 `ivyea-agent` 1.16.9。CI 中配置的平台矩阵不等于本机已验证所有环境。
 
 ```powershell
 powershell -NoProfile -File scripts/manage.ps1 -Action install

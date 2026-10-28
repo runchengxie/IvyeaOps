@@ -51,7 +51,11 @@ The skipped full-suite case was the POSIX-permission check on Windows. Condition
 
 The local runtime was Python 3.12.13 and Node.js 24.22.1 on Windows. Installers accept Node.js 18+, while CI uses Node.js 22.
 
-The npm mirror returned an unsupported audit-endpoint 404. A retry with `--registry=https://registry.npmjs.org` produced the vulnerability report. The lockfile blob is unchanged from the base (`cc21d1025cd8f8e9f07a11d9789c66274be29ae0`), so these are recorded as an existing dependency baseline. High-severity entries include axios, browserslist, follow-redirects, form-data, js-yaml, nanoid, postcss, source-map-js and vite. No `audit fix`, dependency upgrade or ignore expansion was performed. Dependency remediation needs its own compatibility validation, especially where the suggested Vite fix is a major version change.
+The npm mirror returned an unsupported audit-endpoint 404. A retry with `--registry=https://registry.npmjs.org` produced the vulnerability report. The lockfile blob is unchanged from the base (`cc21d1025cd8f8e9f07a11d9789c66274be29ae0`), so these are recorded as an existing dependency baseline. High-severity entries include axios, browserslist, follow-redirects, form-data, js-yaml, nanoid, postcss, source-map-js and vite. At the initial audit, no `audit fix`, dependency upgrade or ignore expansion had been performed. Dependency remediation needs its own compatibility validation, especially where the suggested Vite fix is a major version change.
+
+## Dependency remediation follow-up
+
+A later security update raised the source-build minimum to Node.js 20, upgraded Vite, React Router, KaTeX and the syntax highlighter, and updated compatible transitive dependencies. After the update, npm audit reported four low-severity findings associated with nested KaTeX in `rehype-katex` and `remark-math`; no high or moderate findings remained. An attempted override left an invalid installed dependency tree and was removed. The remaining findings require an upstream-compatible fix or separately validated migration.
 
 ## Reproduce
 
