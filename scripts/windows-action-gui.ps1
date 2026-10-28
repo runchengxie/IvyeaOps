@@ -1,4 +1,4 @@
-# Lightweight Windows GUI wrapper for IvyeaOps update/stop actions.
+﻿# Lightweight Windows GUI wrapper for IvyeaOps update/stop actions.
 
 param(
     [ValidateSet("update", "stop")]

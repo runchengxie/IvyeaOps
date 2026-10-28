@@ -1,0 +1,2 @@
+# Optional real-component verification. Not a runtime dependency.
+playwright>=1.50,<2

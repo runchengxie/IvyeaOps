@@ -111,4 +111,4 @@ codex/hermes 没有输入通道（一次性进程，stdin 从开头就关着）�
 - 依赖 agent ≥ v1.16.0。老 agent 上：不发新事件 → 选项卡和追加回执不出现；
   `live-sessions` 拿不到 → 不显示闪烁标记；没有 `turn_times` → 历史会话不显示
   时刻。全部是"这一块不出现"，不是画一个编出来的值。
-- E2E 见 `client/e2e/followups.mjs`（真实组件树 + 假 HTTP 层）。
+- E2E 见 `src/client/e2e/followups.mjs`（真实组件树 + 假 HTTP 层）。

@@ -1,4 +1,4 @@
-﻿# IvyeaOps Windows x64 one-click updater.
+# IvyeaOps Windows x64 one-click updater.
 #
 # Safe update for GitHub Release ZIP installs:
 #   1. stop the background server

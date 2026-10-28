@@ -1,0 +1,71 @@
+# 使用、CLI 与证据契约
+
+[英文权威版本](../usage.md)
+
+## 日常流程
+
+采集或显式导入 eMAG RO 快照，先核对来源时间、覆盖与限制，再查看经营页面。核实异常后记录本地方案，管理员可填写说明，以当前 snapshot 和 revision 批准。实际人工执行需单独记录，再采集新快照复查。
+
+驾驶舱和调研页使用本店证据，商品分布不是市场需求或份额。Listing 是本地文案，不会提交上架。采购成本未补齐时不计算利润或推荐售价。
+
+待审批中的 eMAG 本地记录与通用 Agent 授权分开。同意 Agent 请求可能继续命令或文件写入，本地方案批准不会执行这些操作。
+
+## CLI
+
+在 `src/server` 使用安装的 venv：
+
+```powershell
+.venv/Scripts/python.exe -m app.emag_job_cli --store-id example-ro --from-latest
+.venv/Scripts/python.exe -m app.emag_job_cli --store-id example-ro --days 29
+.venv/Scripts/python.exe -m app.emag_workflow_cli --store-id example-ro
+```
+
+Unix 改用 `.venv/bin/python`。`example-ro` 是占位标签，不会查找账号。`app.emag_cli` 采集商品，`app.emag_business_cli` 采集组合证据，`app.emag_job_cli` 增加比较、报告与回执。
+
+job 退出码 0 表示报告/回执阶段完成，1 表示已记录的阶段失败，2 表示入口无效、存储问题或运行锁占用。检查回执，不把旧成功当作本次成功，强制中止可能没有新回执。
+
+人工状态变更需 `--snapshot-id`、`--issue-id`、`--state`、`--revision`、`--note`。复查还需明确核对过的更新 `--review-snapshot-id`。状态顺序为 `pending` → `proposed` → `approved` → `executed` → `reviewed`，没有自动批准或退回修改状态。
+
+`app.emag_cli --describe` 只说明采集范围，不读取凭证或调用 eMAG。`--prompt` 支持在终端隐藏输入凭证。组合业务采集和新采集任务使用 Windows 已保存凭证；离线 `--from-latest` 不需要凭证。
+
+## Artifacts
+
+快照和报告位于数据目录的 `store-artifacts`，每个产物上限 2 MB。报告绑定已有 `snapshot_id` 并包含来源证据。store/report ID 为 1–80 个 ASCII 字母、数字、下划线或连字符，首位为字母或数字。`captured_at` 必须有时区。
+
+以下仅为最小合成导入示例，不是真实店铺证据：
+
+```json
+{
+  "store_id": "example-ro",
+  "platform": "emag",
+  "marketplace": "RO",
+  "captured_at": "2026-10-28T00:00:00Z",
+  "source": "synthetic-example",
+  "coverage": ["offers"],
+  "limitations": ["Synthetic example, not verified store data"],
+  "data": {"offers": []}
+}
+```
+
+保存为本地文件，在已安装的后端环境执行 `python -m app.store_cli import-snapshot FILE`。`read-snapshot STORE_ID`、`read-report REPORT_ID` 读取已存产物。读取会返回导入版本的 `snapshot_id`，最新指最后导入，不保证采集时间最新。
+
+回执位于 `store-artifacts/jobs/<store>/`，模式为 `fresh_collection` 或 `existing_snapshot`，记录 stage、status、来源/基线 ID、report ID 和时间。变化预览最多 200 项、64 KB，用 `change_count`、`changes_truncated` 标记总数和截断。省略内容仍由引用的完整快照提供证据。
+
+库存缺失不是 0，数字 10 和字符串 `10.00` 视为相同。商品未出现不等于已下架。发票保留原始符号和币种，不证明付款、成本或利润；退货申请不证明已退款。
+
+## API 与 MCP
+
+管理员 REST 接口位于 `/api/emag`，包括店铺、board、workspace、draft、issue transition 和回执。网页未开放读取凭据或启动 job 的接口，浏览器写请求保留会话与 Origin 检查。
+
+| MCP tool | scope | 行为 |
+|---|---|---|
+| `ivyea_store_snapshot` | `read` | 读取导入证据 |
+| `ivyea_emag_job_status` | `read` | 读取最近记录的手动运行 |
+| `ivyea_report_read` | `read` | 读取本地报告 |
+| `ivyea_report_save` | `write` | 保存绑定来源的本地报告 |
+
+`/api/mcp` 使用 bearer token，网页会话不能替代 token。这些工具不修改平台，原 Amazon keyword tool 仍仅适用 Amazon。
+
+## 计划准备
+
+`/schedules` 按服务器时区预览 cron，导出含 `enabled=false`、`registered=false`、`scheduler_connected=false` 的 JSON，没有调度器消费它。`/schedules?tab=agent` 是现有依赖模型的提示词调度器。草稿或手动回执不代表自动运行 eMAG。

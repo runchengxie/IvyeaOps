@@ -1,17 +1,19 @@
-# IvyeaOps hidden Windows launcher.
+﻿# IvyeaOps hidden Windows launcher.
 # Starts the FastAPI backend in the background, writes logs/PID, then opens the browser.
+param([ValidateSet('auto','source','bundle')][string]$Target='auto')
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$ServerDir = Join-Path $RepoRoot "server"
+$ServerDir = Join-Path $RepoRoot "src/server"
 $DataDir = Join-Path $RepoRoot "data"
 $LogsDir = Join-Path $RepoRoot "logs"
 $PidFile = Join-Path $DataDir "ivyeaops.pid"
 $OutLog = Join-Path $LogsDir "ivyeaops.out.log"
 $ErrLog = Join-Path $LogsDir "ivyeaops.err.log"
 $ServerExe = Join-Path $RepoRoot "IvyeaOpsServer.exe"
+$UseBundle=($Target -eq 'bundle') -or ($Target -eq 'auto' -and (Test-Path -LiteralPath $ServerExe))
 $VenvPy = Join-Path $ServerDir ".venv\Scripts\python.exe"
 $Url = "http://127.0.0.1:8001"
 
@@ -28,10 +30,10 @@ function Open-IvyeaOps {
     Start-Process $Url | Out-Null
 }
 
-if (-not (Test-Path $ServerExe) -and -not (Test-Path $VenvPy)) {
+if (($UseBundle -and -not (Test-Path $ServerExe)) -or (-not $UseBundle -and -not (Test-Path $VenvPy))) {
     Add-Type -AssemblyName System.Windows.Forms
     [System.Windows.Forms.MessageBox]::Show(
-        "IvyeaOps 尚未安装完成。请先双击『安装 IvyeaOps.bat』，或下载 Windows x64 免 Python 版。",
+        "IvyeaOps 尚未安装完成。请先双击『scripts/install.bat』，或下载 Windows x64 免 Python 版。",
         "IvyeaOps",
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error
@@ -58,7 +60,7 @@ if (Test-Path $PidFile) {
 }
 
 # Start hidden: no console window stays in the taskbar. Logs are written to logs\.
-if (Test-Path $ServerExe) {
+if ($UseBundle) {
     $oldOpenBrowser = $env:IVYEA_OPS_SERVER_OPEN_BROWSER
     $oldControlWindow = $env:IVYEA_OPS_CONTROL_WINDOW
     $env:IVYEA_OPS_SERVER_OPEN_BROWSER = "0"

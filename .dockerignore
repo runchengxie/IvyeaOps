@@ -4,9 +4,9 @@ data/
 deploy/systemd
 deploy/nginx
 deploy/cron.d
-client/node_modules
-client/.vite
+src/client/node_modules
+src/client/.vite
 __pycache__
 *.pyc
 .env
-server/.env
+src/server/.env

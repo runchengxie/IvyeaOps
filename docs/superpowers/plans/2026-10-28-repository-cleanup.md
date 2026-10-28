@@ -1,0 +1,9 @@
+# Repository entry points and eMAG navigation
+
+User requests kebab-case documentation under docs, consolidated English script entry points under scripts, and simpler frontend. User selected keeping eMAG core pages while collapsing advanced tools and explicitly selected migrating source to src/client and src/server. Frozen binary bundles retain their existing internal client/server layout.
+
+Move changelog/contributing/security bodies into docs using kebab-case. Preserve GitHub-recognized CONTRIBUTING.md and SECURITY.md entry points as short .github links to the canonical docs; retain root README, LICENSE and agent/config conventions. GitHub docs supports .github/docs locations for community files. Update release extraction, issue templates, local guidance and docs links. Normalize existing uppercase ordinary docs where feasible without rewriting historical changelog prose.
+
+Consolidate Windows action routing in scripts/manage.ps1 with explicit action/target switches and side-effect-free DryRun. English thin launchers live under scripts. Share foreground/LAN startup logic, preserve specialized install/update implementations, move Docker setup scripts with corrected root discovery. Update shortcut and release packaging consumers. Stop only verified workspace-owned PIDs, never broad image/port kills. No installer/update/stop/firewall operation is executed during validation. Data, running local service and main workspace remain in place.
+
+Keep eMAG business navigation visible; advanced system tools collapse in both shells. Keep all routes, permissions, pins and searchable tool catalog functional. Verify real component tree (core/advanced, search, classic/new shell and mobile), script DryRun dispatch and PowerShell/shell syntax, release file inventory, docs link targets, lint/build and relevant tests. Independent review, PR/merge/cleanup under standing authorization.

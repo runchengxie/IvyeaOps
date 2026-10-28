@@ -2,7 +2,7 @@
 
 需要订单、退货、费用及库龄证据时，另见[组合采集命令](emag-business-evidence.md)；以下基础命令仅采集商品。
 
-从 `server` 目录运行，使用现有 Python 环境和 `requirements.txt`。仅支持罗马尼亚站，固定调用官方 HTTPS `product_offer/read`。不支持上架、改价、库存写入或订单处理，不需要内置模型或打开 `/console`。
+从 `src/server` 目录运行，使用现有 Python 环境和 `requirements.txt`。仅支持罗马尼亚站，固定调用官方 HTTPS `product_offer/read`。不支持上架、改价、库存写入或订单处理，不需要内置模型或打开 `/console`。
 
 ## 首次配置
 
@@ -44,7 +44,7 @@ Linux/macOS 或不使用凭据库时，在交互终端加 `--prompt`，密码通
 
 ## 本地开发验证
 
-先安装 `requirements.txt`、`requirements-test.txt` 和 `requirements-mcp-test.txt`。`server/pytest.ini` 将默认发现范围限制为 `tests` 和 `app/tests`，避免把设置连通性业务函数当作测试。完整 `tests` 套件另需安装上游 CI 所用的 IvyeaAgent；它不是 eMAG CLI 运行依赖。
+先安装 `requirements.txt`、`requirements-test.txt` 和 `requirements-mcp-test.txt`。`src/server/pytest.ini` 将默认发现范围限制为 `tests` 和 `app/tests`，避免把设置连通性业务函数当作测试。完整 `tests` 套件另需安装上游 CI 所用的 IvyeaAgent；它不是 eMAG CLI 运行依赖。
 
 ```powershell
 .venv/Scripts/python.exe -m pytest app/tests/test_emag_readonly.py app/tests/test_store_artifacts.py app/tests/test_mcp_server.py app/tests/test_mcp_sdk.py

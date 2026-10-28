@@ -54,7 +54,7 @@ from pathlib import Path
 # Make `from app.core import hub_settings` importable when running as a
 # standalone cron script (no PYTHONPATH set).
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_REPO_ROOT / "server"))
+sys.path.insert(0, str(_REPO_ROOT / "src" / "server"))
 
 STATE_PATH = Path("/tmp/IvyeaOps-cpu-history.json")
 HERMES_ENV_PATH = Path(os.environ.get("HERMES_ENV", "/root/.hermes/.env"))

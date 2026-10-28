@@ -19,13 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # 配置在 server/ruff.toml。选的规则是"当前全仓零违规"的那批 ——
+      # 配置在 src/server/ruff.toml。选的规则是"当前全仓零违规"的那批 ——
       # 一旦变红，必然是这次改动引入的，不会有"历史债太多所以忽略它"的余地。
       - uses: astral-sh/ruff-action@v3
         with:
           args: check
-          src: server
-
+          src: src/server
   server:
     name: server tests (${{ matrix.os }} · py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
@@ -56,8 +55,8 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r server/requirements.txt
-          pip install -r server/requirements-test.txt
+          pip install -r src/server/requirements.txt
+          pip install -r src/server/requirements-test.txt
       # IvyeaAgent 必须装上：Windows 免-Python 包是把 agent 打进 exe 的，
       # tests/test_frozen_agent_serve.py 验的就是"exe 能跑内置 agent"这个契约。
       # 不装的话那 3 项直接失败，而它恰恰是 Windows 用户最依赖的一环。
@@ -91,13 +90,15 @@ jobs:
       # --timeout 而不是任由它挂：挂起在 CI 上表现为"作业转 6 小时然后被杀"，
       # 日志要等作业结束才可读，等于什么线索都拿不到。有了每测试超时，挂起会变成
       # 一条指名道姓的失败。thread 方法在 Windows 上也有效（signal 方法只支持 POSIX）。
+      - name: Check maintained documentation links
+        run: python scripts/check-docs.py
       - name: Test
-        working-directory: server
+        working-directory: src/server
         run: python -m pytest tests -q --timeout=120 --timeout-method=thread
         env:
           PYTHONUTF8: "1"   # Windows 中文编码护栏
 
-  # server/app/tests 单独成一个作业，原因有二：
+  # src/server/app/tests 单独成一个作业，原因有二：
   #   1. 它慢一个数量级（224 项要 7 分钟，上面那批 327 项只要 20 秒），塞进矩阵
   #      会让每个平台都多等 7 分钟；
   #   2. 它此前**从来没进过 CI** —— 于是 require_module 绕过 dependency_overrides
@@ -115,10 +116,10 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r server/requirements.txt
-          pip install -r server/requirements-test.txt -r server/requirements-mcp-test.txt
+          pip install -r src/server/requirements.txt
+          pip install -r src/server/requirements-test.txt -r src/server/requirements-mcp-test.txt
       - name: Test
-        working-directory: server
+        working-directory: src/server
         run: python -m pytest app/tests -q --timeout=180 --timeout-method=thread
         env:
           PYTHONUTF8: "1"
@@ -136,16 +137,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install -r server/requirements.txt
+      - run: pip install -r src/server/requirements.txt
       - name: 造数据并导出
-        working-directory: server
+        working-directory: src/server
         shell: bash
-        run: python ../scripts/ci_migrate_export.py
+        run: python ../../scripts/ci_migrate_export.py
         env: { PYTHONUTF8: "1" }
       - uses: actions/upload-artifact@v4
         with:
           name: migrate-archive
-          path: server/ci-migrate/*.zip
+          path: src/server/ci-migrate/*.zip
           retention-days: 1
 
   migrate-restore-windows:
@@ -156,15 +157,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install -r server/requirements.txt
+      - run: pip install -r src/server/requirements.txt
       - uses: actions/download-artifact@v4
         with:
           name: migrate-archive
-          path: server/ci-migrate
+          path: src/server/ci-migrate
       - name: 还原并核对
-        working-directory: server
+        working-directory: src/server
         shell: bash
-        run: python ../scripts/ci_migrate_verify.py
+        run: python ../../scripts/ci_migrate_verify.py
         env: { PYTHONUTF8: "1" }
 
   powershell-syntax:
@@ -205,21 +206,24 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: client/package-lock.json
+          cache-dependency-path: src/client/package-lock.json
       # npm ci 而不是 npm install：lockfile 必须能在**公共 registry** 上装通。
       # 本机 ~/.npmrc 指着腾讯云内网镜像，曾把 resolved 全写死成内网地址，
       # 到了 CI/用户机上直接装崩。这一步顺便当那件事的回归护栏。
       - name: Install
-        working-directory: client
+        working-directory: src/client
         run: npm ci
       - name: Typecheck
-        working-directory: client
-        run: npx tsc --noEmit -p tsconfig.json
+        working-directory: src/client
+        run: npm run typecheck
+      - name: Locale contracts
+        working-directory: src/client
+        run: npm run test:i18n
       - name: 门禁：不许直接读后端 detail
-        working-directory: client
+        working-directory: src/client
         # 见 scripts/check-errtext.mjs：422 的 detail 是对象数组，直接渲染会把
         # 整页崩成「渲染失败」。清零之后靠这条挡回潮。
         run: node scripts/check-errtext.mjs
       - name: Build
-        working-directory: client
+        working-directory: src/client
         run: npm run build

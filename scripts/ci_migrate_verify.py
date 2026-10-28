@@ -11,11 +11,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "server"))
+sys.path.insert(0, str(ROOT / "src" / "server"))
 
 from ci_migrate_export import NESTED, NESTED_TEXT, PASSPHRASE, ROWS  # noqa: E402
 
-WORK = ROOT / "server" / "ci-migrate"
+WORK = ROOT / "src" / "server" / "ci-migrate"
 FRESH = WORK / "restored"
 
 

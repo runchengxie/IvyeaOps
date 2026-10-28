@@ -1,6 +1,6 @@
 # eMAG 订单、退货、费用与库存证据
 
-从 server 目录运行（与工作台使用同一个 `IVYEA_OPS_DATA_DIR`）：
+从 src/server 目录运行（与工作台使用同一个 `IVYEA_OPS_DATA_DIR`）：
 
 ```powershell
 .venv/Scripts/python.exe -m app.emag_business_cli --store-id my-store-ro --days 29

@@ -52,7 +52,7 @@
 ## 后果
 
 - 侧边栏少两项；`/assistant`、`/imagegen` 的老书签不会 404，接回任务台。
-- 后端 `server/app/routers/assistant.py` **一行没删**：兜底链和作图链路都在这个文件里，
+- 后端 `src/server/app/routers/assistant.py` **一行没删**：兜底链和作图链路都在这个文件里，
   它是被任务台和 Listing、图片翻译共用的。删前端不等于删后端。
 - 老 AI 问答页里那段「localStorage 历史一次性搬进会话库」必须跟着搬到任务台。漏了这一步的话，
   谁的浏览器没在删页面之前打开过 AI 问答，那份记录就永远进不来了。
