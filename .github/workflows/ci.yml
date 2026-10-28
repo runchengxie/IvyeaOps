@@ -213,6 +213,9 @@ jobs:
       - name: Install
         working-directory: src/client
         run: npm ci
+      - name: Dependency security audit
+        working-directory: src/client
+        run: npm audit --registry=https://registry.npmjs.org
       - name: Typecheck
         working-directory: src/client
         run: npm run typecheck

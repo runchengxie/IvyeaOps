@@ -38,6 +38,10 @@ def run(args):
             page.get_by_role('button',name='保存本地记录',exact=True).click()
             page.get_by_role('alert').filter(has_text='Synthetic invalid value').wait_for()
             results['validation_errors_render_as_text']=True
+        if args.section in ('all','stock'):
+            visit(page,'/tools',stockcase='invalid')
+            page.get_by_text('\u5e93\u5b58\u672a\u77e5 4 \u6761',exact=False).wait_for()
+            results['stock_unknown_matches_summary']=True
         if args.section in ('all','catalog'):
             visit(page,'/dashboard')
             page.keyboard.press('Control+k')
@@ -86,5 +90,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base-url',default='http://127.0.0.1:5199')
     parser.add_argument('--browser-executable')
-    parser.add_argument('--section',choices=('all','catalog','errors','locale'),default='all')
+    parser.add_argument('--section',choices=('all','catalog','errors','locale','stock'),default='all')
     run(parser.parse_args())

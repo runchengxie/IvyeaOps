@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0041](./0041-katex-security-override.md) | Shared patched KaTeX version | 2026-10-29 |
 | [0040](./0040-source-layout-and-canonical-docs.md) | Source layout and canonical English documentation | 2026-10-28 |
 | [0039](./0039-emag-evidence-workspace.md) | eMAG 页面复用快照，无头运行与模型解耦 | 2026-10-28 |
 | [0038](./0038-drop-unused-psd-tools.md) | 移除未使用的 psd-tools，保留 Python 3.9 兼容性 | 2026-10-28 |

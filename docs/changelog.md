@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+- Resolve the remaining KaTeX advisories with a shared version override and run the dependency audit in CI.
+
+- Align the eMAG quality page stock-unknown count with the backend summary.
+
 - Updated frontend dependencies to address security advisories. Source builds now require Node.js 20 or later; upgrade Node before running the installer.
 
 ### 新增
