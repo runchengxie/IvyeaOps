@@ -74,7 +74,7 @@ def test_workspace_routes_require_admin_and_bind_actor(sample):
         url='/api/emag/stores/demo-ro'
         assert client.get(url+'/workspace').status_code==401
         app.dependency_overrides[require_admin]=lambda:'operator'
-        payload=dict(snapshot_id=source['snapshot_id'],kind='listing',product_id='1',title='Title',body='Verified')
+        payload={'snapshot_id': source['snapshot_id'],'kind': 'listing','product_id': '1','title': 'Title','body': 'Verified'}
         assert client.post(url+'/drafts',json={**payload,'actor':'forged'}).status_code==422
         result=client.post(url+'/drafts',json=payload)
         assert result.status_code==200 and result.json()['actor']=='operator'
@@ -107,7 +107,7 @@ def test_large_delta_receipt_is_bounded_and_explicit(sample,monkeypatch):
     source=sample()
     changed={**source,'snapshot_id':'new-source','data':{'offers':[dict(source['data']['offers'][0],sale_price=11)]}}
     monkeypatch.setattr(jobs.emag_business,'publish',lambda *args:changed)
-    monkeypatch.setattr(jobs,'compare',lambda *args:[dict(id=str(i),field='validation_status',before='x'*20000,after='y'*20000) for i in range(60)])
+    monkeypatch.setattr(jobs,'compare',lambda *args:[{'id': str(i),'field': 'validation_status','before': 'x'*20000,'after': 'y'*20000} for i in range(60)])
     # save_report normally resolves an imported immutable source.
     monkeypatch.setattr(artifacts,'save_report',lambda *args:{'report_id':'synthetic-report'})
     receipt=jobs.run('demo-ro',lambda:{})

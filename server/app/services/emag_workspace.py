@@ -44,9 +44,9 @@ def save_draft(store_id, snapshot_id, kind, product_id, title, body, actor):
         if kind == 'listing' or product_id:
             if not any(str(row['id']) == product_id for row in snapshot['data']['offers']):
                 raise ValueError('Select a product from the source snapshot')
-        draft = dict(draft_id=secrets.token_hex(16), store_id=store_id, snapshot_id=snapshot_id,
-                     kind=kind, product_id=product_id, title=title.strip(), body=body.strip(),
-                     actor=actor, created_at=datetime.now(timezone.utc).isoformat())
+        draft = {'draft_id': secrets.token_hex(16), 'store_id': store_id, 'snapshot_id': snapshot_id,
+                     'kind': kind, 'product_id': product_id, 'title': title.strip(), 'body': body.strip(),
+                     'actor': actor, 'created_at': datetime.now(timezone.utc).isoformat()}
         with _db() as conn:
             conn.execute('INSERT INTO drafts VALUES (?,?,?)', (draft['draft_id'],store_id,json.dumps(draft)))
     return draft

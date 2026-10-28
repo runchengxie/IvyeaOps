@@ -33,12 +33,12 @@ def compare(before, after):
     result = []
     for key in sorted(old.keys() | new.keys()):
         if key not in old or key not in new:
-            result.append(dict(id=key, field='observed_product', before=key in old, after=key in new))
+            result.append({'id': key, 'field': 'observed_product', 'before': key in old, 'after': key in new})
             continue
         for field in ('sale_price','general_stock','offer_validation_status','validation_status'):
             a,b = old[key].get(field),new[key].get(field)
             equal = normalized(a) == normalized(b) if field in ('sale_price','general_stock') else a == b
-            if not equal: result.append(dict(id=key,field=field,before=a,after=b))
+            if not equal: result.append({'id': key,'field': field,'before': a,'after': b})
     return result
 
 
@@ -49,9 +49,9 @@ def run(store_id, collect_fn=None):
     try:
         # Fail before collecting if another process holds this store's lock.
         conn.execute('BEGIN IMMEDIATE')
-        receipt = dict(run_id=secrets.token_hex(16),store_id=store_id,
-                       started_at=datetime.now(timezone.utc).isoformat(),
-                       mode='fresh_collection' if collect_fn else 'existing_snapshot',stage='source',status='running')
+        receipt = {'run_id': secrets.token_hex(16),'store_id': store_id,
+                       'started_at': datetime.now(timezone.utc).isoformat(),
+                       'mode': 'fresh_collection' if collect_fn else 'existing_snapshot','stage': 'source','status': 'running'}
         try:
             try: previous = artifacts.read_snapshot(store_id)
             except FileNotFoundError: previous = None

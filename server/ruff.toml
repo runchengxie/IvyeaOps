@@ -44,6 +44,11 @@ ignore = [
 "app/evals/make_case.py" = ["T201"]        # 攒评测案例的终端工具
 "app/evals/build_ads_cases.py" = ["T201"]  # 同上
 "app/evals/cli.py" = ["T201"]              # 评测报告就是打给人看的
+"app/emag_cli.py" = ["T201"]              # 只读采集 CLI 的终端输出
+"app/emag_business_cli.py" = ["T201"]
+"app/emag_job_cli.py" = ["T201"]
+"app/emag_workflow_cli.py" = ["T201"]
+"app/store_cli.py" = ["T201"]
 # 测试里偶尔 print 调试是可接受的。
 "tests/*" = ["T201"]
 "app/tests/*" = ["T201"]
