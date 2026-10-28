@@ -1,0 +1,4 @@
+# Optional development-only dependencies for MCP protocol tests.
+# Install alongside requirements.txt; not required by the running service.
+pytest>=8,<10
+mcp==1.30.0

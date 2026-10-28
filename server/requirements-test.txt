@@ -1,0 +1,5 @@
+# Backend test environment; install alongside requirements.txt.
+pytest>=8,<10
+pytest-asyncio>=0.24,<2
+pytest-timeout>=2,<3
+anyio

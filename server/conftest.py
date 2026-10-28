@@ -23,6 +23,15 @@ import tempfile
 
 import pytest
 
+# Never let test discovery or application startup scan/write the developer's
+# real agent profiles. Windows Path.home() uses USERPROFILE, not HOME.
+_TEST_HOME = tempfile.mkdtemp(prefix="ivyea-tests-home-")
+os.environ["HOME"] = _TEST_HOME
+os.environ["USERPROFILE"] = _TEST_HOME
+os.environ["IVYEA_HOME"] = tempfile.mkdtemp(prefix="ivyea-tests-agent-")
+os.environ["HERMES_HOME"] = tempfile.mkdtemp(prefix="ivyea-tests-hermes-")
+os.environ["IVYEA_AGENT_AUTO_START"] = "0"
+
 # 同样的道理，对日志落盘也要堵一次：`app.core.obs.configure_logging()` 是在
 # `app.main` **被 import 的那一刻**执行的，比下面那个 fixture 换 data_dir 要早，
 # 于是测试会在**真实** data/logs 下建出日志文件来。这里在 conftest 模块体里就
@@ -46,7 +55,7 @@ os.environ.setdefault(
 # "data dir: /root/ivyea-ops/data"）。环境变量是 config 在类定义时读的，reload
 # 之后照样生效，所以这里两条一起上：环境变量兜底，fixture 负责每次会话换新目录。
 _ENV_DATA_DIR = tempfile.mkdtemp(prefix="ivyea-tests-data-")
-os.environ.setdefault("IVYEA_OPS_DATA_DIR", _ENV_DATA_DIR)
+os.environ["IVYEA_OPS_DATA_DIR"] = _ENV_DATA_DIR
 
 # 第五件：`ensure_studio_dirs()` 还会做一次"从老位置 ~/.hermes 搬迁"。跑测试时
 # 它读的是**开发者真实的 ~/.hermes**，日志里能看到 "migrated 759 skills entrie(s)"

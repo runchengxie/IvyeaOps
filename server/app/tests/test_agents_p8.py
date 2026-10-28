@@ -22,6 +22,7 @@ def ctx(tmp_path: Path, monkeypatch):
     cmds.mkdir(parents=True)
     (cmds / "greet.md").write_text("---\ndescription: Greet someone\n---\nHello $ARGUMENTS, welcome!\n", encoding="utf-8")
     monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
 
     from app.core import config as cfg_mod
     importlib.reload(cfg_mod)

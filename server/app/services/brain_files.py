@@ -117,7 +117,7 @@ def list_files() -> dict[str, Any]:
         # Category = top-level directory
         category = rel_parts[0] if len(rel_parts) > 1 else "root"
         files.append({
-            "path": str(path.relative_to(_brain_root())),
+            "path": path.relative_to(_brain_root()).as_posix(),
             "name": path.stem,
             "size": st.st_size,
             "mtime": st.st_mtime,
@@ -135,7 +135,7 @@ def read_file(rel_path: str) -> dict[str, Any]:
     if size > MAX_FILE_BYTES:
         raise BrainFilesError(f"file too large to edit ({size} bytes)")
     return {
-        "path": str(target.relative_to(_brain_root())),
+        "path": target.relative_to(_brain_root()).as_posix(),
         "content": target.read_text(encoding="utf-8", errors="replace"),
         "size": size,
     }
@@ -148,7 +148,7 @@ def write_file(rel_path: str, content: str) -> dict[str, Any]:
         raise BrainFilesError(f"file too large to save (>{MAX_WRITE_BYTES} bytes)")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
-    rel = str(target.relative_to(_brain_root()))
+    rel = target.relative_to(_brain_root()).as_posix()
     return {"ok": True, "path": rel, "size": len(encoded)}
 
 

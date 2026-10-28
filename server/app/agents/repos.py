@@ -48,10 +48,10 @@ def generate_display_name(project_name: str, actual_project_dir: Optional[str] =
             return name
     except Exception:
         logger.debug("json.loads 失败（旁路，已忽略）", exc_info=True)
-    if project_path.startswith("/"):
-        parts = [p for p in project_path.split("/") if p]
-        return parts[-1] if parts else project_path
-    return project_path
+    # Stored projects may have Windows drive/UNC paths, even after migration
+    # to another OS. Display the last component for either separator style.
+    normalized = project_path.replace("\\", "/").rstrip("/")
+    return posixpath.basename(normalized) or project_path
 
 
 # --- projects repository (projects.db.ts) -----------------------------------

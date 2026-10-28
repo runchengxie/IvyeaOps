@@ -34,10 +34,10 @@ def ctx(tmp_path: Path, monkeypatch):
     ]), encoding="utf-8")
     with db_mod.db_conn() as conn:
         conn.execute("INSERT INTO projects(project_id, project_path, custom_project_name, isStarred, isArchived)"
-                     " VALUES(?,?,?,0,0)", ("p1", str(proj), "My Proj"))
+                     " VALUES(?,?,?,0,0)", ("p1", proj.as_posix(), "My Proj"))
         conn.execute("INSERT INTO sessions(session_id, provider, custom_name, project_path, jsonl_path,"
                      " isArchived, created_at, updated_at) VALUES(?,?,?,?,?,0,?,?)",
-                     ("s1", "claude", "Sess One", str(proj), str(transcript),
+                     ("s1", "claude", "Sess One", proj.as_posix(), str(transcript),
                       "2026-01-01T00:00:00Z", "2026-01-01T00:00:02Z"))
 
     from app.agents import search as search_mod

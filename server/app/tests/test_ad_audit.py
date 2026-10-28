@@ -395,7 +395,7 @@ def test_prompt_includes_goal_posture_and_protected():
     assert "action_summary" in out
     # Source block rendered.
     assert "SP-Auto" in out
-    assert "/tmp/raw.xlsx" in out
+    assert str(Path("/tmp/raw.xlsx")) in out
 
 
 def test_prompt_empty_protected_says_per_data():

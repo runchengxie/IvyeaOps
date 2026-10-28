@@ -1,0 +1,152 @@
+"""Read-only RO offers and source-labelled evidence; no marketplace write API."""
+from datetime import datetime, timezone
+import math
+import time
+
+import httpx
+
+ENDPOINT = 'https://marketplace-api.emag.ro/api-3/product_offer/read'
+
+
+def collect(client, auth, *, page_size=100, delay=1, max_pages=100):
+    if not 1 <= page_size <= 100 or not 1 <= max_pages <= 100 or delay < 0:
+        raise ValueError('Invalid pagination limits')
+    result = {'offers': [], 'pages': 0, 'complete': False, 'reason': 'page_limit'}
+    seen = set()
+    for page in range(1, max_pages + 1):
+        if page > 1:
+            time.sleep(delay)
+        try:
+            response = client.post(ENDPOINT, json={'currentPage': page, 'itemsPerPage': page_size},
+                                   auth=auth, follow_redirects=False)
+            if not response.is_success:
+                result['reason'] = f'http_{response.status_code}'
+                break
+            body = response.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            result['reason'] = type(exc).__name__
+            break
+        if not isinstance(body, dict) or body.get('isError') is not False:
+            result['reason'] = 'api_error'
+            break
+        rows = body.get('results')
+        if not isinstance(rows, list) or len(rows) > page_size or any(not isinstance(r, dict) for r in rows):
+            result['reason'] = 'invalid_results'
+            break
+        ids = [str(r['id']) for r in rows if type(r.get('id')) in (int, str) and str(r['id']).strip()]
+        if len(ids) != len(rows) or len(set(ids)) != len(ids) or seen.intersection(ids):
+            result['reason'] = 'missing_or_duplicate_ids'
+            break
+        seen.update(ids)
+        result['offers'].extend(rows)
+        result['pages'] += 1
+        if len(rows) < page_size:
+            result.update(complete=True, reason='end_of_pagination')
+            break
+    return result
+
+
+def redact(value, secrets):
+    if isinstance(value, str):
+        for secret in sorted((s for s in secrets if s), key=len, reverse=True):
+            value = value.replace(secret, '[REDACTED]')
+        return value
+    if isinstance(value, list):
+        return [redact(v, secrets) for v in value]
+    if isinstance(value, dict):
+        return {redact(k, secrets): redact(v, secrets) for k, v in value.items()}
+    return value
+
+
+def project_offer(row):
+    fields = ('id', 'part_number', 'part_number_key', 'name', 'status', 'sale_price',
+              'currency', 'vat_id', 'general_stock', 'estimated_stock', 'fulfillment_type',
+              'auto_translated', 'category_id', 'brand', 'campaign_id', 'campaign_name')
+    result = {key: row[key] for key in fields if key in row}
+    # Validation errors may embed entire submitted product documents. Keep compact
+    # status evidence, not those documents or potentially signed attachment URLs.
+    for key in ('validation_status', 'translation_validation_status', 'offer_validation_status'):
+        if key not in row:
+            continue
+        original = row[key]
+        values = original if isinstance(original, list) else [original]
+        compact = []
+        for status in values:
+            if not isinstance(status, dict):
+                compact.append({})
+                continue
+            item = {k: status[k] for k in ('value', 'description') if k in status}
+            errors = status.get('errors')
+            if isinstance(errors, str):
+                item['errors'] = errors[:2000]
+            elif errors:
+                item['errors'] = 'Structured validation details omitted; inspect seller portal.'
+            compact.append(item)
+        result[key] = compact if isinstance(original, list) else (compact[0] if compact else {})
+    return result
+
+
+def _values(row, key):
+    value = row.get(key)
+    values = value if isinstance(value, list) else [value]
+    return [v.get('value') if isinstance(v, dict) else None for v in values]
+
+
+def summarize(rows):
+    summary = dict.fromkeys(('offers', 'stock_positive', 'stock_zero', 'stock_unknown',
+                            'documentation_status_unknown', 'price_status_unknown',
+                            'invalid_price', 'invalid_price_with_stock', 'documentation_rejected', 'blocked'), 0)
+    issues = []
+    for row in rows:
+        summary['offers'] += 1
+        stock = row.get('general_stock')
+        known = type(stock) in (int, float) and math.isfinite(stock) and stock >= 0
+        summary['stock_unknown' if not known else ('stock_positive' if stock > 0 else 'stock_zero')] += 1
+        reasons = []
+        for field, counter, allowed in (
+                ('validation_status', 'documentation_status_unknown', {1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12}),
+                ('offer_validation_status', 'price_status_unknown', {1, 2})):
+            values = _values(row, field)
+            if not values or any(type(v) is not int or v not in allowed for v in values):
+                summary[counter] += 1
+        if 2 in _values(row, 'offer_validation_status'):
+            summary['invalid_price'] += 1
+            summary['invalid_price_with_stock'] += int(known and stock > 0)
+            reasons.append('invalid_price')
+        for value, reason in ((8, 'documentation_rejected'), (10, 'blocked')):
+            if value in _values(row, 'validation_status'):
+                summary[reason] += 1
+                reasons.append(reason)
+        if reasons:
+            issues.append({'id': row.get('id'), 'part_number': row.get('part_number'),
+                           'part_number_key': row.get('part_number_key'), 'reasons': reasons,
+                           'general_stock': stock if known else None})
+    return {**summary, 'issues': issues}
+
+
+def publish(store_id, result):
+    from app.services import store_artifacts
+    if not result['complete']:
+        raise ValueError('Incomplete collections cannot be imported')
+    rows = [project_offer(row) for row in result['offers']]
+    summary = summarize(rows)
+    snapshot = store_artifacts.import_snapshot({
+        'store_id': store_id, 'platform': 'emag', 'marketplace': 'RO',
+        'captured_at': datetime.now(timezone.utc).isoformat(), 'source': ENDPOINT,
+        'coverage': ['product_offer/read: complete pagination'],
+        'limitations': ['Sequential pages are not an atomic snapshot.',
+                       'Store label is caller-supplied; account identity is not independently verified.',
+                       'No orders, revenue, returns or separate FBE inventory reconciliation.',
+                       'Missing stock is unknown; status=1 does not prove storefront availability.',
+                       'Selected fields only; nested validation documents are omitted.'],
+        'data': {'pages': result['pages'], 'offers': rows, 'summary': summary}})
+    markdown = '\n'.join(['# eMAG RO offer audit', '',
+        f"Snapshot: {snapshot['snapshot_id']}", f"Captured: {snapshot['captured_at']}", '',
+        *[f'- {key}: {value}' for key, value in summary.items() if key != 'issues'], '',
+        'Issue IDs, SKU references and compact platform errors are in the attached snapshot.',
+        'Issue totals count observed flags only; unknown validation statuses are not confirmed healthy.',
+        'Issue groups may overlap. Verify stock scope, VAT and platform price criteria before changing offers.',
+        'This report does not establish storefront availability, revenue or losses. No store writes performed.'])
+    report = store_artifacts.save_report(store_id, snapshot['snapshot_id'], 'eMAG RO offer audit', markdown)
+    return {'complete': True, 'offers': len(rows), 'snapshot_id': snapshot['snapshot_id'],
+            'report_id': report['report_id']}

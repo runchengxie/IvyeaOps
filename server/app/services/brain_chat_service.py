@@ -543,7 +543,7 @@ def upload_knowledge(filename: str, data: bytes, category: str | None = None, ti
     parent.mkdir(parents=True, exist_ok=True)
     target = _unique_path(parent / f"{date_prefix}-{_slugify(clean_title)}.md")
     target.write_text(markdown, encoding="utf-8")
-    rel = str(target.relative_to(bf.BRAIN_ROOT))
+    rel = target.relative_to(bf.BRAIN_ROOT).as_posix()
     import_status = "skipped"
     import_raw = ""
     if import_after_save:
@@ -623,7 +623,7 @@ def ingest_pasted_text(text: str, import_after_save: bool = True) -> dict[str, A
     target = _unique_path(parent / f"{date_prefix}-{_slugify(str(analysis.get('title') or '粘贴知识'))}.md")
     markdown = _pasted_markdown(clean, analysis)
     target.write_text(markdown, encoding="utf-8")
-    rel = str(target.relative_to(bf.BRAIN_ROOT))
+    rel = target.relative_to(bf.BRAIN_ROOT).as_posix()
     warnings = list(analysis.get("warnings") or [])
     import_status = "skipped"
     import_raw = ""

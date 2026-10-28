@@ -330,6 +330,11 @@ def synchronize_hermes() -> int:
     'Hermes 会话' project. Tries `hermes sessions export` (source=cli, no cron) and
     falls back to scanning the session JSON files directly when the CLI is
     unavailable (e.g. Windows). Best-effort: any failure returns 0."""
+    # On Windows a CLI shim's descendants can keep stdout/stderr pipes open
+    # after subprocess.run kills the parent on timeout. Project listing then
+    # waits indefinitely. Use the existing bounded session-file scanner.
+    if os.name == 'nt':
+        return _synchronize_hermes_from_files()
     binary = _hermes_bin()
     env = os.environ.copy()
     env["PATH"] = os.pathsep.join([os.path.expanduser("~/.local/bin"),
