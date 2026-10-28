@@ -91,8 +91,8 @@ export const BOARDS: BoardEntry[] = [
     // sceneChips() 是从这张表派生的，跟着板块一起删掉的话，任务台首页会
     // 静默少一个入口，而且没有任何地方会报错。
     scene: {
-      icon: "ad-waste", label: "广告浪费诊断",
-      prompt: "拉一下最近 7 天的领星广告大盘，找出高花费零转化的低效项并给出可执行的调整方案。",
+      icon: "ad-waste", label: "店铺证据巡检",
+      prompt: "读取最近的 eMAG RO 快照，注明采集时间与限制，优先列出有库存且价格无效的商品。成本待补，不自动改价。",
     },
   },
   {
@@ -100,7 +100,7 @@ export const BOARDS: BoardEntry[] = [
     pathLabel: "~/市场调研", keepAlive: true, ready: true,
     scene: {
       icon: "market", label: "市场调研",
-      prompt: "帮我对「」这个关键词做一份美国站市场调研报告，用市场调研板块的真实数据。",
+      prompt: "先分析 eMAG RO 本店商品结构，明确全市场需求与竞品数据的缺口；不要用本店分布推断市场份额。",
     },
   },
   {
@@ -108,7 +108,7 @@ export const BOARDS: BoardEntry[] = [
     pathLabel: "~/打法推荐", keepAlive: true, ready: true,
     scene: {
       icon: "playbook", label: "打法推荐",
-      prompt: "帮我给「」这个产品出一份美国站的站内打法方案，售价按 USD 计。",
+      prompt: "依据 eMAG RO 的实际异常与库龄，给出按优先级排序的核查计划，引用证据版本；采购成本缺失时不推荐售价。",
     },
   },
   {
@@ -116,7 +116,7 @@ export const BOARDS: BoardEntry[] = [
     pathLabel: "~/Listing工作台", admin: true, key: "listing", ready: true,
     scene: {
       icon: "listing", label: "Listing 诊断",
-      prompt: "ASIN  这条 Listing 为什么不转化？帮我拉真实数据做质量诊断。",
+      prompt: "对指定 eMAG 商品 ID / SKU / PNK 检查已有资料，起草罗马尼亚语 Listing，未验证的规格与认证不要补写。仅保存本地草稿。",
     },
   },
   {
@@ -127,8 +127,8 @@ export const BOARDS: BoardEntry[] = [
     to: "/tools", icon: "analysis", label: "分析工具", group: "tools", legacySection: "工具",
     pathLabel: "~/分析工具", admin: true, key: "tools", keepAlive: true, ready: true,
     scene: {
-      icon: "analysis", label: "关键词竞争",
-      prompt: "帮我分析「」这个关键词在美国站的竞争格局，并给出切入建议。",
+      icon: "analysis", label: "数据质量分析",
+      prompt: "检查 eMAG 快照的未知库存、缺失字段、库存库龄差异及最近巡检回执；缺失不等于零，离线重放不等于新采集。",
     },
   },
   // 「领星 ERP」板块已并入运营驾驶舱（2026-08-29）—— 它和驾驶舱本来就是同一件事的

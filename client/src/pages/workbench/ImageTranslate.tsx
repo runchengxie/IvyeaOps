@@ -49,7 +49,7 @@ export default function ImageTranslate() {
 
   useEffect(() => {
     (async () => {
-      try { setLangs(await listLangs()); } catch { /* ignore */ }
+      try { const supported:Lang[]=await listLangs();setLangs(supported);if(supported.some(l=>l.code==='RO'))setPicked(new Set(['RO'])); } catch { /* ignore */ }
       await Promise.all([refreshWorkspace(), refreshFolders()]);
     })();
   }, []);

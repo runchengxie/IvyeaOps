@@ -2,9 +2,7 @@
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
-import json
 import time
-import httpx
 from app.services import emag_readonly, store_artifacts
 
 BASE='https://marketplace-api.emag.ro/api-3/'

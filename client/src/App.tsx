@@ -40,6 +40,8 @@ const Capabilities = lazy(() => import("./pages/workbench/Capabilities"));
 const Approvals = lazy(() => import("./pages/workbench/Approvals"));
 const Schedules = lazy(() => import("./pages/workbench/Schedules"));
 const EmagOperations = lazy(() => import("./pages/workbench/EmagOperations"));
+const EmagWorkspace = lazy(() => import("./pages/workbench/EmagWorkspace"));
+const EmagNews = lazy(() => import("./pages/workbench/EmagNews"));
 import { landingPath } from "./lib/navRegistry";
 import { me } from "./api/client";
 import { getSetupStatus, type SetupChecks } from "./api/setup";
@@ -160,9 +162,15 @@ export default function App() {
             <Route path="community-market"
                    element={<Navigate to="/capabilities?tab=community" replace />} />
             <Route path="schedules" element={<Schedules />} />
-            <Route path="dashboard" element={<Home />} />
+            <Route path="dashboard" element={<EmagWorkspace mode="dashboard" />} />
+            <Route path="legacy/dashboard" element={<Home />} />
+            <Route path="legacy/market" element={<Market />} />
+            <Route path="legacy/playbook" element={<Playbook />} />
+            <Route path="legacy/tools" element={<Tools />} />
+            <Route path="legacy/listing" element={<ListingWorkbench />} />
+            <Route path="legacy/news" element={<News />} />
             <Route path="emag" element={<EmagOperations />} />
-            <Route path="tools" element={<Tools />} />
+            <Route path="tools" element={<EmagWorkspace mode="tools" />} />
             <Route path="skill" element={<SkillStudio />}>
               <Route index element={<StatsOverview />} />
               <Route path="browse" element={<SkillBrowse />} />
@@ -172,13 +180,13 @@ export default function App() {
             </Route>
             <Route path="terminal" element={<Terminal />} />
             <Route path="servmon" element={<ServerMonitor />} />
-            <Route path="news" element={<News />} />
+            <Route path="news" element={<EmagNews />} />
             <Route path="brain" element={<Brain />} />
             <Route path="agents" element={<Agents />} />
-            <Route path="listing" element={<ListingWorkbench />} />
+            <Route path="listing" element={<EmagWorkspace mode="listing" />} />
             <Route path="freight" element={<FreightQuote />} />
-            <Route path="market" element={<Market />} />
-            <Route path="playbook" element={<Playbook />} />
+            <Route path="market" element={<EmagWorkspace mode="market" />} />
+            <Route path="playbook" element={<EmagWorkspace mode="playbook" />} />
             <Route path="users" element={<Users />} />
             {/* AI 问答 / AI 生图已并入任务台：问答就是任务台不带工具的那一档，
                 作图由任务台的 image_generate 工具直接调同一条链路。老书签和老会话
