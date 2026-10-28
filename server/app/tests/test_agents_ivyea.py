@@ -148,7 +148,7 @@ def test_ivyea_inject_says_no_when_nothing_is_running():
     """没有活轮就明说不收 —— 调用方据此把这句话当成下一轮发出去。"""
     import asyncio
     from app.agents import ivyea_driver as iv
-    out = asyncio.get_event_loop().run_until_complete(iv.inject("nobody", "补一句"))
+    out = asyncio.run(iv.inject("nobody", "补一句"))
     assert out == {"ok": True, "accepted": False, "reason": "no_live_turn"}
 
 
@@ -158,7 +158,7 @@ def test_ivyea_inject_refuses_when_the_agent_has_no_input_channel():
     from app.agents import ivyea_driver as iv
     iv._active_sessions["s-old"] = {"proc": object(), "status": "active", "stdin_channel": False}
     try:
-        out = asyncio.get_event_loop().run_until_complete(iv.inject("s-old", "补一句"))
+        out = asyncio.run(iv.inject("s-old", "补一句"))
         assert out["accepted"] is False and out["reason"] == "no_input_channel"
     finally:
         iv._active_sessions.pop("s-old", None)

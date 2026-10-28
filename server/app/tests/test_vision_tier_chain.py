@@ -170,7 +170,7 @@ def test_sync_never_pushes_an_unsolicited_clear(monkeypatch):
 
 def _run(coro):
     import asyncio
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def test_reference_templates_skipped_loudly_without_semantic_vision(monkeypatch):

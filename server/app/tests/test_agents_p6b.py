@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib
 import stat
+import sys
 from pathlib import Path
 
 import pytest
@@ -30,10 +31,9 @@ def _fake_codex(tmp_path: Path) -> Path:
 
 
 def _fake_hermes(tmp_path: Path) -> Path:
-    p = tmp_path / "fake_hermes.sh"
-    p.write_text("#!/bin/bash\n"
-                 "echo 'Hello from fake hermes'\n"
-                 "echo 'session_id: 20260101_fake'\n", encoding="utf-8")
+    p = tmp_path / "fake_hermes.py"
+    p.write_text("print('Hello from fake hermes')\n"
+                 "print('session_id: 20260101_fake')\n", encoding="utf-8")
     p.chmod(p.stat().st_mode | stat.S_IEXEC | stat.S_IRUSR)
     return p
 
@@ -65,6 +65,15 @@ def env(tmp_path: Path, monkeypatch):
     importlib.reload(main_mod)
     monkeypatch.setattr(hd_mod, "_hermes_bin", lambda: str(_fake_hermes(tmp_path)))
     monkeypatch.setattr(cx_mod, "_codex_bin", lambda: str(_fake_codex(tmp_path)))
+    # Windows cannot execute a shebang script directly. Keep real subprocess
+    # pipes/WS streaming, but launch only these test fakes via this interpreter.
+    real_spawn = hd_mod.asyncio.create_subprocess_exec
+    async def spawn_fake(*argv, **kwargs):
+        executable = Path(argv[0])
+        if executable.parent == tmp_path and executable.suffix == '.py':
+            argv = (sys.executable, *argv)
+        return await real_spawn(*argv, **kwargs)
+    monkeypatch.setattr(hd_mod.asyncio, 'create_subprocess_exec', spawn_fake)
     cookie = sec_mod.issue_session("admin", "admin")
     c = TestClient(main_mod.app)
     c.cookies.set(cfg_mod.settings.session_cookie_name, cookie)
@@ -113,8 +122,8 @@ def test_codex_command_round_trip(env):
 
 def test_hermes_error_output_classified_as_error(env, tmp_path, monkeypatch):
     c = env
-    err = tmp_path / "fake_hermes_err.sh"
-    err.write_text("#!/bin/bash\necho 'Error code: 401 - Invalid API Key'\necho 'session_id: zz'\n",
+    err = tmp_path / "fake_hermes_err.py"
+    err.write_text("print('Error code: 401 - Invalid API Key')\nprint('session_id: zz')\n",
                    encoding="utf-8")
     err.chmod(err.stat().st_mode | stat.S_IEXEC | stat.S_IRUSR)
     from app.agents import hermes_driver as hd
@@ -145,6 +154,7 @@ def test_hermes_read_history_from_json(tmp_path, monkeypatch):
                      {"role": "assistant", "content": "hello back"}],
     }), encoding="utf-8")
     monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
     from app.agents import hermes_driver as hd
     importlib.reload(hd)  # re-evaluate _HERMES_SESSIONS_DIR against the temp HOME
     h = hd.read_history("20260101_abc")

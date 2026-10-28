@@ -42,6 +42,8 @@ Linux/macOS 或不使用凭据库时，在交互终端加 `--prompt`，密码通
 
 ## 本地开发验证
 
+先安装 `requirements.txt`、`requirements-test.txt` 和 `requirements-mcp-test.txt`。`server/pytest.ini` 将默认发现范围限制为 `tests` 和 `app/tests`，避免把设置连通性业务函数当作测试。完整 `tests` 套件另需安装上游 CI 所用的 IvyeaAgent；它不是 eMAG CLI 运行依赖。
+
 ```powershell
 .venv/Scripts/python.exe -m pytest app/tests/test_emag_readonly.py app/tests/test_store_artifacts.py app/tests/test_mcp_server.py app/tests/test_mcp_sdk.py
 ```

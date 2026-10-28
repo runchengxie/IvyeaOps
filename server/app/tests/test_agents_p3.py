@@ -142,6 +142,11 @@ def test_workspace_root_in_blocklist_still_allows_subpaths(monkeypatch):
     ("Cannot create workspace in system directory: /root") and no agent project
     could be created on a root install."""
     from app.agents.routers import projects as P
+    # This case models a POSIX /root installation. Do not resolve its paths
+    # against the current Windows drive when running the suite on Windows.
+    import posixpath
+    from types import SimpleNamespace
+    monkeypatch.setattr(P, 'os', SimpleNamespace(path=posixpath))
     monkeypatch.setattr(P, "WORKSPACES_ROOT", "/root")
     assert P._validate_workspace_path("/root/my-project") == "/root/my-project"
     assert P._validate_workspace_path("/root/agents/demo") == "/root/agents/demo"

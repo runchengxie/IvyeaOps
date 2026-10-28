@@ -666,6 +666,10 @@ _CLIENT_DIST = settings.root_dir / "client" / "dist"
 # register it once here instead of hard-coding a media_type at each call site.
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
+# Windows registry entries can map JavaScript to text/plain, which browsers
+# reject for ES modules. Override host mappings before serving static assets.
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/javascript", ".mjs")
 
 
 if _CLIENT_DIST.exists():

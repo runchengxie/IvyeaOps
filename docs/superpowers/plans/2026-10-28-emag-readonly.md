@@ -24,12 +24,12 @@
 - [x] Extract services/emag_readonly.py and services/windows_credentials.py; add app/emag_cli.py with describe and prompt modes.
 - [x] Add operator documentation, changelog and ADR; replace store-specific synthetic test labels.
 - [x] Run focused tests and backend suite, review changes and publishable commit history; validate the CLI against real API without publishing results.
-- [ ] Commit, push feature branch to origin, create a PR against fork main, verify remote SHA and PR URL.
+- [x] Commit, push feature branch to origin, create a PR against fork main, verify remote SHA and PR URL.
 
 ## Validation outcome
 
 49 focused tests passed. A live read-only CLI collection successfully imported a snapshot and report, and a restarted backend passed the standard MCP SDK read/save/read-back smoke test. No production data is included in this change.
 
-The full backend suite is not green. Bare pytest collects `app/services/settings_test.py::test_value` as a test and errors because fixture `key` does not exist. A broader attempt showed additional failures and was interrupted before a complete diagnostic report; those failures have not been attributed to this change or fixed. Publish as a draft PR, not a merge-ready change. Existing anyio deprecation warnings remain.
+The initial full-suite attempt exposed test discovery, Windows path/executable isolation, and event-loop lifecycle issues. Follow-up maintenance resolved them: the complete Windows/Python 3.12 runs now report 904 passed / 1 platform skip in tests, and 346 passed in app/tests. Existing library deprecation warnings remain. Cross-platform hosted CI is still separate from these local results. See docs/backend-testing.md for isolation and execution details.
 
 Independent review found missing validation-status coverage; unknown counters and malformed-status regressions now cover it. Publishable diff and previously unpublished history were checked for local store/account/path markers and data/env files.

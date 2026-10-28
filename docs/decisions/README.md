@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0038](./0038-drop-unused-psd-tools.md) | 移除未使用的 psd-tools，保留 Python 3.9 兼容性 | 2026-10-28 |
 | [0037](./0037-emag-readonly-cli.md) | eMAG 采集使用独立只读 CLI | 2026-10-28 |
 | [0036](./0036-external-agent-store-artifacts.md) | 外部 Agent 通过 MCP 使用店铺快照与本地报告 | 2026-10-28 |
 | [0001](./0001-self-hosted-web-workbench.md) | 做成自托管 Web 工作台，而不是桌面软件 | 2026-04-19 |

@@ -24,6 +24,7 @@ def ctx(tmp_path: Path, monkeypatch):
     # (otherwise it would pull in the host's real sessions and pollute the test).
     (tmp_path / "home").mkdir()
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "home"))
 
     from app.core import config as cfg_mod
     importlib.reload(cfg_mod)
@@ -50,16 +51,16 @@ def ctx(tmp_path: Path, monkeypatch):
     with db_mod.db_conn() as conn:
         conn.execute(
             "INSERT INTO projects(project_id, project_path, custom_project_name, isStarred, isArchived)"
-            " VALUES(?,?,?,?,?)", ("p1", str(proj_dir), None, 0, 0))
+            " VALUES(?,?,?,?,?)", ("p1", proj_dir.as_posix(), None, 0, 0))
         conn.execute(
             "INSERT INTO sessions(session_id, provider, custom_name, project_path, jsonl_path, isArchived,"
             " created_at, updated_at) VALUES(?,?,?,?,?,?,?,?)",
-            (sid, "claude", "First session", str(proj_dir), str(transcript), 0,
+            (sid, "claude", "First session", proj_dir.as_posix(), str(transcript), 0,
              "2026-01-01T00:00:00Z", "2026-01-01T00:00:02Z"))
         conn.execute(
             "INSERT INTO sessions(session_id, provider, custom_name, project_path, jsonl_path, isArchived,"
             " created_at, updated_at) VALUES(?,?,?,?,?,?,?,?)",
-            ("sess-archived", "claude", "Old", str(proj_dir), None, 1,
+            ("sess-archived", "claude", "Old", proj_dir.as_posix(), None, 1,
              "2025-12-01T00:00:00Z", "2025-12-01T00:00:00Z"))
 
     from app import main as main_mod

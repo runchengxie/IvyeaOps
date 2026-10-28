@@ -26,6 +26,7 @@ def client(tmp_path: Path, monkeypatch):
     # Isolate HOME so the projects-list synchronizer scans an empty ~/.claude.
     (tmp_path / "home").mkdir()
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "home"))
 
     from app.core import config as cfg_mod
     importlib.reload(cfg_mod)
