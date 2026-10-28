@@ -55,7 +55,7 @@ if (fresh) {
 // 直接标记成"看过了"。（真实使用中它只出现一次，不是常态。）
 if (!fresh) {
   for (const p of ["/console", "/dashboard", "/market", "/tools", "/agents",
-                   "/terminal", "/listing", "/skill-hub", "/hub-settings"]) {
+                   "/terminal", "/listing", "/skill-hub", "/hub-settings", "/schedules"]) {
     localStorage.setItem("ivyea-tour:" + p, "1");
   }
 }
