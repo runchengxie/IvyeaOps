@@ -25,6 +25,7 @@ Windows 采集从普通凭据 `IvyeaOps/eMAG/RO` 读取用户名密码，沿用 
 |---|---|---|
 | 任务台 | RO/RON、ID/SKU/PNK、来源和未知字段约束 | 对话需要模型；不是巡检运行依赖 |
 | 能力市场 | 默认 eMAG 能力目录、管理员来源与回执状态、CLI/MCP 契约 | 本地快照不证明凭证可用；社区技能安装不等于 eMAG 对接 |
+| 待审批 | 管理员查看各店当前版本的已拟方案，核对来源和说明后记录本地批准 | 不执行平台操作；旧方案仅参考。通用 Agent 授权另列，同意可能继续执行命令/写文件 |
 | eMAG 巡检 | 商品异常、经营证据、人工处理和新版本复查 | 审批记录不会调用写 API |
 | 运营驾驶舱 | 实际商品、订单数量、库存库龄字段与异常 | 成本未补前不计算利润或建议售价 |
 | 市场调研 | 本店类目结构、商品搜索、带版本的人工调研记录 | 不是全市场份额/销量/关键词搜索量 |
@@ -45,7 +46,9 @@ Windows 采集从普通凭据 `IvyeaOps/eMAG/RO` 读取用户名密码，沿用 
 
 草稿保存在私有 `emag-workspace.sqlite3`，绑定 store/snapshot/product。Listing 必须选择该版本实际存在的商品。来源已更新时拒绝保存旧版本，历史草稿标为待重新核对。草稿目前是追加记录，不是平台 Listing 编辑器。
 
-人工状态只能按 pending → proposed → approved → executed → reviewed 顺序记录，需明确来源快照、异常 ID、当前 revision 和说明。例：
+人工状态只能按 pending → proposed → approved → executed → reviewed 顺序记录，需明确来源快照、异常 ID、当前 revision 和说明。
+
+`/approvals` 汇总当前版本 `proposed` 方案；管理员必须逐项阅读并填写批准说明。来源或 revision 变化返回冲突时，必须重新读取。没有读取成功的店铺不计为“无待批”；最多展示每店 100 条历史记录作为参考。当前流程尚无退回修改状态，不确定时可暂不批准。点击完整上下文会带着店铺标签进入巡检页。
 
 ```powershell
 .venv/Scripts/python.exe -m app.emag_workflow_cli --store-id demo-ro --snapshot-id VERSION --issue-id ISSUE --state proposed --revision 0 --note "核实平台拒绝原因，暂不改价"

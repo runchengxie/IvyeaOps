@@ -20,6 +20,7 @@ import {
   ivyeaChatPermission, ivyeaPendingApprovals, type PendingApproval,
 } from "../../api/ivyeaAgent";
 import { errText } from "../../lib/errText";
+import EmagApprovalQueue from './EmagApprovalQueue';
 
 function ago(ts: number): string {
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
@@ -36,10 +37,10 @@ export default function Approvals() {
   const [busy, setBusy] = useState("");
   const [done, setDone] = useState<Record<string, string>>({});
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (clearError=true) => {
     try {
       setItems(await ivyeaPendingApprovals());
-      setErr("");
+      if(clearError)setErr("");
     } catch (e) {
       setErr(errText(e, "读不到待审批列表"));
     }
@@ -56,17 +57,19 @@ export default function Approvals() {
   const decide = async (a: PendingApproval, choice: "approve" | "deny") => {
     setBusy(a.request_id);
     try {
-      await ivyeaChatPermission({
+      const result=await ivyeaChatPermission({
         request_id: a.request_id, session_id: a.session_id, choice,
       });
+      if(!result?.ok)throw new Error(result?.error||result?.detail||'Agent 未确认接收此次决定');
       setDone((d) => ({ ...d, [a.request_id]: choice }));
       await load();
-    } catch (e) {
+    } catch (e:any) {
       // 409 = 另一个页签已经点过 / 已超时。这不是错误，是"你来晚了"，
       // 说清楚比红一片有用。
-      setDone((d) => ({ ...d, [a.request_id]: "gone" }));
-      setErr(errText(e, "这条审批已经失效"));
-      await load();
+      const gone=[404,409].includes(e.response?.status);
+      if(gone)setDone((d) => ({ ...d, [a.request_id]: "gone" }));
+      setErr(errText(e, gone?'这条审批已经失效':'Agent 未确认接收决定，请刷新核对；未标记为已同意。'));
+      await load(false);
     } finally { setBusy(""); }
   };
 
@@ -74,10 +77,13 @@ export default function Approvals() {
 
   return (
     <div className="ap-wrap">
+      <h1>待审批</h1>
+      <EmagApprovalQueue />
       <div className="ap-head">
-        <b>待审批</b>
+        <b>通用 Agent 操作授权</b>
         <span>{items === null ? "加载中…" : `${list.length} 条等你决定`}</span>
       </div>
+      <p style={{lineHeight:1.7}}>以下是当前账号的 Agent 会话请求。同意可能让 Agent 立即继续执行命令或写文件；与上方仅保存本地记录的 eMAG 方案批准不同。请先查看完整上下文。</p>
 
       {err && <div className="ap-err">{err}</div>}
 
