@@ -1656,6 +1656,18 @@ export function installMockApi(): void {
     if (ms) await new Promise((r) => setTimeout(r, ms));
     const full = (config.baseURL || "/api").replace(/^\/api/, "") + (config.url || "");
     ((window as any).__harnessRequests ||= []).push(full);
+    if(config.method&&config.method!=='get')((window as any).__harnessMutations ||= []).push({url:full,method:config.method});
+    const scheduleCase=new URLSearchParams(location.search).get('schedulestatus');
+    if(full==='/schedules/preview-cron'){
+      if(scheduleCase==='preview-delay')await new Promise(resolve=>setTimeout(resolve,500));
+      if(scheduleCase==='preview-error')throw Object.assign(new Error('Synthetic preview unavailable'),{response:{status:503}});
+      return {...reply(config),data:{ok:true,timezone:'Asia/Shanghai',next:['2026-10-29 09:00','2026-10-30 09:00','2026-10-31 09:00']}};
+    }
+    if(full==='/schedules'){
+      if(scheduleCase==='list-error')throw Object.assign(new Error('Synthetic schedules unavailable'),{response:{status:503}});
+      return {...reply(config),data:{ok:true,timezone:'Asia/Shanghai',tasks:scheduleCase==='history-error'?[{id:'demo-task',name:'Synthetic disabled task',cron:'0 9 * * *',prompt:'Synthetic task',enabled:false,last_run:0,skill:''}]:[]}};
+    }
+    if(full==='/schedules/demo-task/runs'&&scheduleCase==='history-error')throw Object.assign(new Error('Synthetic history unavailable'),{response:{status:503}});
     const approvalCase=new URLSearchParams(location.search).get('emagapproval');
     const agentCase=new URLSearchParams(location.search).get('agentapproval');
     if(full==='/ivyea-agent/console/approvals/pending')return {...reply(config),data:{ok:true,approvals:agentCase&&!agentDecided?[{request_id:'synthetic-agent',session_id:'demo-session',title:'Synthetic Agent operation',op_type:'command',requested_at:Date.now()/1000}]:[]}};

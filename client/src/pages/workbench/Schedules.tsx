@@ -25,8 +25,10 @@ import {
 } from "../../api/schedules";
 import { ivyeaSkills, type IvyeaSkillInfo } from "../../api/ivyeaAgent";
 import { errText } from "../../lib/errText";
+import { useSearchParams } from 'react-router-dom';
+import EmagSchedulePlan from './EmagSchedulePlan';
 
-const BLANK = { name: "", cron: "0 9 * * *", prompt: "", skill: "", enabled: true };
+const BLANK = { name: "", cron: "0 9 * * *", prompt: "", skill: "", enabled: false };
 
 function fmt(ts: number): string {
   if (!ts) return "—";
@@ -44,15 +46,18 @@ function StatusDot({ status }: { status: string }) {
 }
 
 function RunHistory({ taskId }: { taskId: string }) {
+  const [error,setError]=useState('');
   const [runs, setRuns] = useState<ScheduleRun[] | null>(null);
   const [openRun, setOpenRun] = useState("");
 
   useEffect(() => {
     let alive = true;
-    scheduleRuns(taskId).then((r) => alive && setRuns(r)).catch(() => alive && setRuns([]));
+    setRuns(null);setError('');
+    scheduleRuns(taskId).then((r) => alive && setRuns(r)).catch(() => {if(alive)setError('运行历史读取失败，不能判断是否存在记录。');});
     return () => { alive = false; };
   }, [taskId]);
 
+  if(error)return <p role="alert">{error}</p>;
   if (runs === null) return <div className="skeleton line md" />;
   if (!runs.length) return <div className="cap-empty">还没有运行记录。可以点「立即运行」先试一次。</div>;
 
@@ -102,8 +107,9 @@ function TaskForm({
   // cron 改一次就预览一次：让人在保存前就看清它到底什么时候跑，而不是等第二天。
   useEffect(() => {
     let alive = true;
+    setPreview(null);
     const t = window.setTimeout(() => {
-      previewCron(form.cron).then((d) => alive && setPreview(d)).catch(() => void 0);
+      previewCron(form.cron).then((d) => alive && setPreview(d)).catch(() => {if(alive)setPreview({ok:false,error:'服务器预览读取失败，请重试。'});});
     }, 300);
     return () => { alive = false; window.clearTimeout(t); };
   }, [form.cron]);
@@ -168,7 +174,7 @@ function TaskForm({
       </label>
 
       <div className="cap-form-actions">
-        <button className="cs-btn cs-btn-primary" disabled={saving || (preview ? !preview.ok : false)}
+        <button className="cs-btn cs-btn-primary" disabled={saving || !preview?.ok}
                 onClick={() => void save()}>{saving ? "保存中…" : "保存"}</button>
         <button className="cs-btn" onClick={onCancel}>取消</button>
       </div>
@@ -177,6 +183,7 @@ function TaskForm({
 }
 
 function SchedulesInner() {
+  const [error,setError]=useState('');
   const notify = useToast();
   const confirm = useConfirm();
   const [tasks, setTasks] = useState<ScheduleTask[] | null>(null);
@@ -193,8 +200,9 @@ function SchedulesInner() {
       const d = await listSchedules();
       setTasks(d.tasks || []);
       setTz(d.timezone || "");
+      setError('');
     } catch (e: any) {
-      setTasks([]);
+      setError('定时任务读取失败，不能判断是否存在任务。');
       notify("error", errText(e, "读取定时任务失败"));
     }
   }, [notify]);
@@ -243,15 +251,14 @@ function SchedulesInner() {
   return (
     <div className="cap-page">
       <div className="home-topbar">
-        <span className="home-title"><span style={{ color: "var(--acc)" }}>⏱</span> 定时任务</span>
+        <span className="home-title"><span style={{ color: "var(--acc)" }}>⏱</span> 通用 Agent 定时任务</span>
         <span style={{ fontSize: "var(--fs-11)", color: "var(--t3)" }}>到点让 Agent 自己跑一轮</span>
       </div>
 
       <div className="sch-notice">
         <span className="cs-icon">⚑</span>
         <span>
-          定时任务**始终只读**：Agent 会巡检、分析、把要改的东西列清楚，但不会真的动线上数据。
-          没人在屏幕前的时候，自动批准写操作太危险 —— 要落地就看完结果再去对应板块执行。
+          这里使用原有 Agent 调度器，需要可用的模型/Agent。它不是 eMAG 确定性 CLI 调度入口；新建表单默认停用，已有任务的状态保持原样。
           {tz && <> 触发时刻按 <b>服务器时区 {tz}</b> 计算，不是你浏览器所在的时区。</>}
         </span>
       </div>
@@ -264,7 +271,7 @@ function SchedulesInner() {
       )}
 
       <div className="cap-section">
-        {tasks === null ? <div className="skeleton line lg" />
+        {error?<p role="alert">{error}</p>:tasks === null ? <div className="skeleton line lg" />
           : tasks.length === 0 ? (
             <div className="cap-empty">
               还没有定时任务。常见用法：每天早上让 Agent 跑一遍广告巡检、每周一出一份类目大盘摘要。
@@ -314,7 +321,13 @@ function SchedulesInner() {
 export default function Schedules() {
   return (
     <ToastProvider>
-      <SchedulesInner />
+      <SchedulePage />
     </ToastProvider>
   );
+}
+
+function SchedulePage(){
+  const [params,setParams]=useSearchParams();
+  const agent=params.get('tab')==='agent';
+  return <div className="cap-page"><h1>定时任务</h1><div className="home-tabs">{[['emag','eMAG 计划准备'],['agent','通用 Agent 任务']].map(([key,label])=><button className={'home-tab'+((agent?key==='agent':key==='emag')?' active':'')} key={key} onClick={()=>setParams(p=>{const next=new URLSearchParams(p);next.set('tab',key);return next;})}>{label}</button>)}</div>{agent?<SchedulesInner/>:<EmagSchedulePlan/>}</div>;
 }
