@@ -44,7 +44,11 @@ def test_router_requires_admin_and_binds_actor(evidence):
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
     from app.core.security import require_admin
-    from app.routers.emag_operations import router
+    import importlib
+    from app.routers import emag_operations as router_module
+    # Other API fixtures reload security; bind this test's router to the same
+    # require_admin object we override below, rather than an earlier import.
+    router=importlib.reload(router_module).router
     evidence()
     app=FastAPI(); app.include_router(router,prefix='/api/emag')
     with TestClient(app) as client:

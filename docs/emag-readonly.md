@@ -1,5 +1,7 @@
 # eMAG RO 只读商品采集
 
+需要订单、退货、费用及库龄证据时，另见[组合采集命令](emag-business-evidence.md)；以下基础命令仅采集商品。
+
 从 `server` 目录运行，使用现有 Python 环境和 `requirements.txt`。仅支持罗马尼亚站，固定调用官方 HTTPS `product_offer/read`。不支持上架、改价、库存写入或订单处理，不需要内置模型或打开 `/console`。
 
 ## 首次配置
