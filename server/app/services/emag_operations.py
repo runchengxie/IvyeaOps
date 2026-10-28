@@ -70,7 +70,8 @@ def board(store_id):
             'SELECT payload,snapshot,issue FROM records WHERE store=? ORDER BY rowid DESC LIMIT 100',(store_id,))]
     return {'store_id':store_id,'snapshot_id':snapshot['snapshot_id'],'captured_at':snapshot['captured_at'],
             'source':snapshot['source'],'coverage':snapshot['coverage'],'limitations':snapshot['limitations'],
-            'summary':summarize(snapshot['data']['offers']),'issues':issues,'records':history}
+            'summary':summarize(snapshot['data']['offers']),'commercial_summary':snapshot['data'].get('commercial_summary'),
+            'issues':issues,'records':history}
 
 
 def transition(store_id, snapshot_id, issue_id, state, revision, note, actor, review_snapshot_id=None):

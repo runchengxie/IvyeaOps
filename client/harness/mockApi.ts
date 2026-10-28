@@ -185,7 +185,7 @@ const DEMO_PLAN = {
 };
 
 const ROUTES: Array<[string, Canned | ((url: string) => Canned)]> = [
-  ["/emag/stores/demo-ro", {store_id:"demo-ro",snapshot_id:"demo-v1",captured_at:"2026-10-28T00:00:00Z",source:"synthetic-harness",coverage:["offers"],limitations:["Synthetic UI fixture; not store evidence"],summary:{offers:1,invalid_price:1,invalid_price_with_stock:1},issues:[{issue_id:"demo-issue",id:1,reason:"invalid_price",part_number:"DEMO-SKU",name:"Demo product",general_stock:3,state:"pending",revision:0,history:[]}],records:[]}],
+  ["/emag/stores/demo-ro", {store_id:"demo-ro",snapshot_id:"demo-v1",captured_at:"2026-10-28T00:00:00Z",source:"synthetic-harness",coverage:["offers"],limitations:["Synthetic UI fixture; not store evidence"],summary:{offers:1,invalid_price:1,invalid_price_with_stock:1},commercial_summary:{orders_fbe_count:2,orders_seller_count:0,returns_fbe_count:1,returns_seller_count:0,invoice_count:2,invoice_amount_unknown:1,window:{start:"2026-10-01",end:"2026-10-28"},inventory:{general_stock_total:3,aging_total:4,mismatched_skus:1,aging_bands:{"365+":2},stock_rows_unknown:0,aging_rows_unknown:1},invoice_totals:[{category:"FC",currency:"RON",amount_as_reported:"-2.50"}]},issues:[{issue_id:"demo-issue",id:1,reason:"invalid_price",part_number:"DEMO-SKU",name:"Demo product",general_stock:3,state:"pending",revision:0,history:[]}],records:[]}],
   ["/emag/stores", [{store_id:"demo-ro"}]],
   /* ── 运营驾驶舱 / 用户管理 ────────────────────────────────────────────────
      这几条以前没有，兜底的 `{}` 让 MarketTraffic 的 `items.filter` 直接把整页
