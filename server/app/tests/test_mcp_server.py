@@ -19,6 +19,8 @@ def api(tmp_path, monkeypatch):
     from app.services import mcp_tokens
     importlib.reload(mcp_tokens)
     mcp_tokens.init_db()
+    from app.core import audit
+    audit.init_db()
 
     from fastapi import FastAPI
     from app.routers import mcp_server
@@ -38,6 +40,24 @@ def _rpc(client, method, *, token="", params=None):
 def test_no_token_is_rejected(api):
     client, _, _ = api
     assert _rpc(client, "tools/list").status_code == 401
+
+
+def test_initialized_notification_is_accepted_without_body(api):
+    client, tokens, _ = api
+    token = tokens.issue('SDK')['token']
+    response = client.post('/api/mcp', headers={'Authorization':f'Bearer {token}'},
+        json={'jsonrpc':'2.0','method':'notifications/initialized'})
+    assert response.status_code == 202
+    assert response.content == b''
+
+
+def test_read_token_cannot_save_report(api):
+    client, tokens, mcp = api
+    assert mcp.TOOLS['ivyea_report_save']['scope'] == 'write'
+    token = tokens.issue('readonly')['token']
+    response = _rpc(client, 'tools/call', token=token,
+        params={'name':'ivyea_report_save','arguments':{'store_id':'demo','title':'Audit','markdown':'Evidence'}})
+    assert response.status_code == 401
 
 
 def test_garbage_token_is_rejected(api):
@@ -151,16 +171,18 @@ def test_no_call_home(api, monkeypatch):
     import socket
     def refuse(*a, **kw):
         raise AssertionError("MCP 链路发起了外部连接")
-    monkeypatch.setattr(socket.socket, "connect", refuse)
-    monkeypatch.setattr(socket, "create_connection", refuse)
-
     client, tokens, _ = api
     t = tokens.issue("离线")["token"]
-    assert _rpc(client, "initialize", token=t).status_code == 200
-    assert _rpc(client, "tools/list", token=t).status_code == 200
-    r = _rpc(client, "tools/call", token=t,
-             params={"name": "ivyea_health", "arguments": {}})
-    assert r.json()["result"]["isError"] is False
+    # Windows creates a loopback socketpair when starting its asyncio loop.
+    # Start the test transport before blocking connections made by tool calls.
+    with client:
+        monkeypatch.setattr(socket.socket, "connect", refuse)
+        monkeypatch.setattr(socket, "create_connection", refuse)
+        assert _rpc(client, "initialize", token=t).status_code == 200
+        assert _rpc(client, "tools/list", token=t).status_code == 200
+        r = _rpc(client, "tools/call", token=t,
+                 params={"name": "ivyea_health", "arguments": {}})
+        assert r.json()["result"]["isError"] is False
 
 
 def test_tool_failure_becomes_an_mcp_error_not_a_500(api, monkeypatch):

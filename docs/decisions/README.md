@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0036](./0036-external-agent-store-artifacts.md) | 外部 Agent 通过 MCP 使用店铺快照与本地报告 | 2026-10-28 |
 | [0001](./0001-self-hosted-web-workbench.md) | 做成自托管 Web 工作台，而不是桌面软件 | 2026-04-19 |
 | [0002](./0002-own-the-frontend.md) | 放弃反向代理别人的 Dashboard，自己拥有整个前端 | 2026-05-03 |
 | [0003](./0003-unify-under-one-workbench.md) | 所有 Web 能力收编到一个工作台 | 2026-05-09 |

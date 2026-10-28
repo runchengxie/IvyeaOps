@@ -9,9 +9,8 @@ Cursor 或任何别的 Agent 连过来，数据从头到尾没离开过他那台
 
 协议
 ----
-走 JSON-RPC over HTTP（MCP 的 Streamable HTTP 形态）。**只读工具**开放，写操作
-（改真实广告活动）需要 write scope，而 write 令牌默认不发 ——
-一个用来做分析的令牌，不该顺带具备改人家投放的能力。
+走 JSON-RPC over HTTP（MCP 的 Streamable HTTP 形态）。读取工具需要 read，
+本地报告保存需要 write，默认只发 read。当前不开放真实广告或店铺写工具。
 """
 from __future__ import annotations
 
@@ -23,6 +22,7 @@ from threading import Lock
 from typing import Any, Deque, Dict, Optional
 
 from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi.responses import Response
 from pydantic import BaseModel
 
 from app.services import mcp_tokens
@@ -46,9 +46,25 @@ def _schema(props: Optional[dict] = None, required: Optional[list] = None) -> di
             "required": required or [], "additionalProperties": False}
 
 
-# 第一期只放**只读**工具。写工具（改预算/改竞价）等规则引擎的护栏落地后再开，
-# 而不是先把口子开出来再补护栏。
+# 店铺变更仍未开放；唯一写工具是保存本地巡检报告。
 TOOLS: Dict[str, dict] = {
+    "ivyea_store_snapshot": {
+        "description": "读取最近导入的店铺快照，包含采集时间、来源、覆盖范围与限制；不是实时店铺查询。",
+        "inputSchema": _schema({"store_id": {"type": "string"}}, ["store_id"]),
+        "scope": "read",
+    },
+    "ivyea_report_save": {
+        "description": "保存本地巡检报告，绑定读取时返回的 snapshot_id 证据版本。仅写本机文件，不修改店铺。需要 write 令牌。",
+        "inputSchema": _schema({"store_id": {"type": "string"}, "snapshot_id": {"type": "string"}, "title": {"type": "string", "maxLength": 200},
+                                "markdown": {"type": "string", "maxLength": 200000}},
+                               ["store_id", "snapshot_id", "title", "markdown"]),
+        "scope": "write",
+    },
+    "ivyea_report_read": {
+        "description": "按 report_id 读取已保存的本地巡检报告及其快照证据。",
+        "inputSchema": _schema({"report_id": {"type": "string"}}, ["report_id"]),
+        "scope": "read",
+    },
     "ivyea_health": {
         "description": "IvyeaOps 版本与集成开关状态。用于确认连接是否正常。",
         "inputSchema": _schema(),
@@ -117,6 +133,21 @@ def _dump(obj: Any) -> dict:
 
 async def _call_tool(name: str, args: dict) -> dict:
     """执行一个工具，返回 MCP 的 content 结构。"""
+    if name in {"ivyea_store_snapshot", "ivyea_report_save", "ivyea_report_read"}:
+        from app.services import store_artifacts as stores
+        spec = TOOLS[name]["inputSchema"]
+        if not isinstance(args, dict) or set(args) - set(spec["properties"]):
+            return _text("Unexpected tool arguments", is_error=True)
+        if any(not isinstance(args.get(key), str) for key in spec["required"]):
+            return _text("Required arguments must be strings", is_error=True)
+        try:
+            if name == "ivyea_store_snapshot":
+                return _dump(stores.read_snapshot(args['store_id']))
+            if name == "ivyea_report_read":
+                return _dump(stores.read_report(args['report_id']))
+            return _dump(stores.save_report(args['store_id'], args['snapshot_id'], args['title'], args['markdown']))
+        except (ValueError, FileNotFoundError) as exc:
+            return _text(str(exc), is_error=True)
     if name == "ivyea_health":
         from app.core.version import app_version
         from app.services import skill_market
@@ -159,7 +190,7 @@ class RpcBody(BaseModel):
 @router.post("")
 @router.post("/")
 async def rpc(body: RpcBody, request: Request,
-              authorization: Optional[str] = Header(None)) -> dict:
+              authorization: Optional[str] = Header(None)):
     """MCP JSON-RPC 入口。"""
     method = body.method
     params = body.params or {}
@@ -176,7 +207,7 @@ async def rpc(body: RpcBody, request: Request,
 
     if method.startswith("notifications/"):
         _auth(request, authorization)
-        return {"jsonrpc": "2.0", "id": body.id, "result": {}}
+        return Response(status_code=202)
 
     if method == "tools/list":
         row = _auth(request, authorization)
