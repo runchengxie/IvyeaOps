@@ -38,7 +38,7 @@ The repository currently has no configured coverage threshold, dedicated securit
 
 - A run interrupted before receipt publication may leave only an older receipt. Inspect timestamps and referenced IDs.
 - Platform API windows/timezones and invoice service periods are not interchangeable.
-- The quality page's missing-stock display currently omits some malformed/negative values classified unknown by the backend summary. This is a reported product inconsistency, not a changed test expectation.
+- The quality page displays the backend `stock_unknown` summary, including missing, malformed and negative stock values.
 - Agent locale resources do not localize the entire workbench. `en-US` is not the saved language ID exposed by the language list.
 - IvyeaAgent is an external installed dependency. This audit checks the repository's adapters and installed runtime version, not every upstream release or provider behavior.
 - Docker images, binary packages and systemd changes require their own environment validation before deployment.

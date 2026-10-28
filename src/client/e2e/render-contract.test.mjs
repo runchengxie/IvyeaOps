@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Prism } from 'react-syntax-highlighter';
+import katex from 'katex';
 
 test('math and syntax highlighting render after dependency upgrades', () => {
   const math = renderToStaticMarkup(React.createElement(ReactMarkdown, { remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }, 'Inline $x^2$'));
@@ -14,4 +15,9 @@ test('math and syntax highlighting render after dependency upgrades', () => {
   const code = renderToStaticMarkup(React.createElement(Prism, { language: 'javascript' }, 'const answer = 42;'));
   assert.match(code, /answer/);
   assert.match(code, /token/);
+});
+
+test('math rendering keeps untrusted links disabled', () => {
+  const output = katex.renderToString(String.raw`\href{javascript:alert(1)}{click}`, { trust: false, throwOnError: false });
+  assert.doesNotMatch(output, /href="javascript:/i);
 });

@@ -55,7 +55,9 @@ The npm mirror returned an unsupported audit-endpoint 404. A retry with `--regis
 
 ## Dependency remediation follow-up
 
-A later security update raised the source-build minimum to Node.js 20, upgraded Vite, React Router, KaTeX and the syntax highlighter, and updated compatible transitive dependencies. After the update, npm audit reported four low-severity findings associated with nested KaTeX in `rehype-katex` and `remark-math`; no high or moderate findings remained. An attempted override left an invalid installed dependency tree and was removed. The remaining findings require an upstream-compatible fix or separately validated migration.
+A later security update raised the source-build minimum to Node.js 20, upgraded Vite, React Router, KaTeX and the syntax highlighter, and updated compatible transitive dependencies. After the update, npm audit reported four low-severity findings associated with nested KaTeX in `rehype-katex` and `remark-math`; no high or moderate findings remained. An attempted override left an invalid installed dependency tree and was removed. A follow-up overrides both formula plugins to use KaTeX 0.19.1, outside their declared version ranges. A clean installation, formula rendering and a security audit are required to validate this choice.
+
+The override removes the remaining four audit findings in the resolved lockfile. CI runs `npm audit` against the public registry without suppressions or a reduced severity threshold.
 
 ## Reproduce
 
@@ -70,7 +72,7 @@ Use the Unix venv executable on Unix. The script requires a synthetic loopback h
 ## Limits and unresolved inconsistencies
 
 - Main workbench text is largely Chinese. Only the Agent subtree has i18next. Supported saved IDs are `en`, `ko`, `zh-CN`, `ja`, `ru`, `de`, `tr`, `it`. The default is `zh-CN`, missing translation fallback is `en`, and unsupported saved preferences reset to the default. `en-US` resolves English resources in i18next but is not a saved language-list ID.
-- The eMAG quality page's missing-stock count does not include every malformed/negative value that the backend classifies unknown. This product discrepancy is reported, not hidden by a changed test expectation.
+- The initial audit identified a discrepancy in the quality page's stock count. The page now uses the backend `stock_unknown` summary; the synthetic browser regression covers missing, negative, string and boolean values.
 - Platform filter timezone interpretation, invoice service periods, costs and uncollected inventory fields remain explicit evidence limits.
 - Docker builds, binary packaging, Linux systemd changes, cross-platform execution of the entire matrix, private vulnerability reporting configuration and full provider/model runs were not executed here.
 - The initial full run encountered a stale-module ImportError while code was being changed during execution. The fresh final process completed successfully. This is not presented as a product defect or a passing initial run.

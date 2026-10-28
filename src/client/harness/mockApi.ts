@@ -1657,6 +1657,10 @@ export function installMockApi(): void {
     const full = (config.baseURL || "/api").replace(/^\/api/, "") + (config.url || "");
     ((window as any).__harnessRequests ||= []).push(full);
     if(config.method&&config.method!=='get')((window as any).__harnessMutations ||= []).push({url:full,method:config.method});
+    if(full==='/emag/stores/demo-ro/workspace' && new URLSearchParams(location.search).get('stockcase')==='invalid'){
+      const response=reply(config); const data=response.data as any;
+      return {...response,data:{...data,summary:{...data.summary,stock_unknown:4},offers:[...data.offers,...[null,-1,'3',true].map((general_stock,id)=>({id:id+10,general_stock}))]}};
+    }
     const scheduleCase=new URLSearchParams(location.search).get('schedulestatus');
     if(full==='/schedules/preview-cron'){
       if(scheduleCase==='preview-delay')await new Promise(resolve=>setTimeout(resolve,500));
