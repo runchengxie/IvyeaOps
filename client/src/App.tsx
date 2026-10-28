@@ -39,6 +39,7 @@ const Console = lazy(() => import("./pages/workbench/Console"));
 const Capabilities = lazy(() => import("./pages/workbench/Capabilities"));
 const Approvals = lazy(() => import("./pages/workbench/Approvals"));
 const Schedules = lazy(() => import("./pages/workbench/Schedules"));
+const EmagOperations = lazy(() => import("./pages/workbench/EmagOperations"));
 import { landingPath } from "./lib/navRegistry";
 import { me } from "./api/client";
 import { getSetupStatus, type SetupChecks } from "./api/setup";
@@ -160,6 +161,7 @@ export default function App() {
                    element={<Navigate to="/capabilities?tab=community" replace />} />
             <Route path="schedules" element={<Schedules />} />
             <Route path="dashboard" element={<Home />} />
+            <Route path="emag" element={<EmagOperations />} />
             <Route path="tools" element={<Tools />} />
             <Route path="skill" element={<SkillStudio />}>
               <Route index element={<StatsOverview />} />

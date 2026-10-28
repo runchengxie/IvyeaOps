@@ -62,6 +62,7 @@ export type BoardEntry = {
  * 侧边栏必须和改造前长得一模一样。
  */
 export const BOARDS: BoardEntry[] = [
+  { to: "/emag", icon: "home", label: "eMAG 巡检", group: "tools", legacySection: "工具", pathLabel: "~/eMAG 巡检", admin: true, ready: true },
   // ── 新壳一级项 ────────────────────────────────────────────────────────────
   {
     to: "/console", icon: "console", label: "任务台", group: "console",

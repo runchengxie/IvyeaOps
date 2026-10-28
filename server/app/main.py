@@ -612,6 +612,8 @@ app.include_router(skill_market_router.router, prefix="/api/skill-market", tags=
 # 令牌的签发与撤销走下面这组管理接口，只有管理员能动。
 app.include_router(mcp_server_router.router, prefix="/api/mcp", tags=["mcp"])
 app.include_router(mcp_tokens_router.router, prefix="/api/mcp-admin", tags=["mcp"])
+from app.routers import emag_operations as emag_operations_router
+app.include_router(emag_operations_router.router, prefix="/api/emag", tags=["emag"])
 # 通知渠道与 AI 预算：改的是"这台机器往哪儿发请求"，只有管理员能动。
 app.include_router(notify_router.router, prefix="/api/notify", tags=["notify"])
 app.include_router(news.router, prefix="/api/news", tags=["news"], dependencies=[Depends(require_module("news"))])
