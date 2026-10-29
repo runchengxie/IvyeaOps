@@ -6,8 +6,8 @@ export function createDemoState() {
     { id: 103, name: '示例硅胶模具', part_number: 'DEMO-MOULD', part_number_key: 'DEMO-PNK-03', sale_price: 35, general_stock: 0, category_id: 101, brand: 'Demo' },
   ];
   const issues = [
-    { issue_id: 'demo-price', id: 101, reason: 'invalid_price', name: offers[0].name, part_number: offers[0].part_number, general_stock: 8, platform_status: { value: 2, description: 'Synthetic price review required', errors: 'Check price against costs' }, state: 'pending', revision: 0, history: [] },
-    { issue_id: 'demo-doc', id: 103, reason: 'documentation_rejected', name: offers[2].name, part_number: offers[2].part_number, general_stock: 0, platform_status: [{ value: 8, error_details: [{ code: 'demo:shape', message: 'Choose a product shape' }] }], state: 'pending', revision: 0, history: [] },
+    { issue_id: 'demo-price', id: 101, reason: 'invalid_price', name: offers[0].name, part_number: offers[0].part_number, sale_price: 29.9, currency: 'RON', general_stock: 8, platform_status: { value: 2, description: 'Synthetic price review required', errors: 'Check price against costs' }, state: 'pending', revision: 0, history: [] },
+    { issue_id: 'demo-doc', id: 103, reason: 'documentation_rejected', name: offers[2].name, part_number: offers[2].part_number, sale_price: 35, currency: 'RON', general_stock: 0, platform_status: [{ value: 8, error_details: [{ code: 'demo:shape', message: 'Choose a product shape' }] }], state: 'pending', revision: 0, history: [] },
   ];
   const drafts = [];
   const records = [];

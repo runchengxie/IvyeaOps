@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 - Restore the legacy promotion and advertising page container styles by fixing an invalid CSS comment.
+- Add issue filters and store-bound links to captured product details, platform messages and local history; document prerequisites for future eMAG API writes.
 - Temporarily remove macOS from the CI server test matrix; Linux and Windows remain covered.
 - Rename the project presentation to ivyeaops and update links for the `ivyeaops` repository; existing configuration and credential identifiers remain unchanged.
 
