@@ -2,6 +2,8 @@
 
 [简体中文](docs/zh-CN/readme.md)
 
+[Project website and documentation](https://runchengxie.github.io/IvyeaOps/)
+
 A self-hosted eMAG RO operations workspace, forked from [Hector-xue/IvyeaOps](https://github.com/Hector-xue/IvyeaOps). The fork uses imported evidence for inspections, business summaries and local drafts. It retains the original platform tools under explicit legacy routes.
 
 ## Current capabilities
