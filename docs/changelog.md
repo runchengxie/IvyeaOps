@@ -8,8 +8,8 @@
 
 ## [Unreleased]
 
+- Add issue filters and store-bound links to captured product details, platform messages and local history; document prerequisites for future eMAG API writes.
 - Temporarily remove macOS from the CI server test matrix; Linux and Windows remain covered.
-
 - Rename the project presentation to ivyeaops and update links for the `ivyeaops` repository; existing configuration and credential identifiers remain unchanged.
 
 - Add management and specialist views to the eMAG dashboard, with source-labelled metrics and explicit unavailable data.

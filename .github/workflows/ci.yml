@@ -193,7 +193,7 @@ jobs:
         run: npm run test:render
       - name: Demo isolation and build
         working-directory: src/client
-        run: npm run test:demo && npm run test:emag-dashboard && npm run typecheck:demo && npm run build:demo
+        run: npm run test:demo && npm run test:emag-dashboard && npm run test:emag-issues && npm run typecheck:demo && npm run build:demo
       - name: Locale contracts
         working-directory: src/client
         run: npm run test:i18n

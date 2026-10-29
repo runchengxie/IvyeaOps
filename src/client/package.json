@@ -10,6 +10,7 @@
     "build:demo": "vite build --config vite.demo.config.ts",
     "test:demo": "node --test demo/state.test.mjs",
     "test:emag-dashboard": "node --test e2e/emag-dashboard-data.test.mjs",
+    "test:emag-issues": "node --test e2e/emag-issue-filter.test.mjs",
     "typecheck:demo": "tsc -p tsconfig.demo.json",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
