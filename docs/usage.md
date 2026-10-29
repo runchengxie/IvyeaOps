@@ -14,6 +14,8 @@ The project site includes an interactive eMAG demo built from the workbench comp
 
 The cockpit and research pages use own-store evidence. Catalog distribution is not market demand or share. Listing drafts are local text, not submitted listings. Costs are missing until supplied, so profit and recommended selling prices are not computed.
 
+The eMAG dashboard offers management and specialist views of the current snapshot. Its cards show collected offer, order, stock, invoice and issue observations where available; absent figures are marked unavailable. Issue counts cover observed flags, with unknown price status, documentation status and stock shown separately; absent unknown counts are not treated as zero. The specialist view links to the inspection workflow. The data source, capture time and order window remain visible. Views do not change the snapshot or trigger marketplace operations.
+
 The page labelled Approvals separates local eMAG records from general Agent permission requests. Accepting an Agent request may resume a command or file write. An eMAG local approval does not perform that action.
 
 ## CLI
