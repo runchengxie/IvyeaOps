@@ -49,7 +49,11 @@ def _reason(issue):
             continue
         details = entry.get('error_details')
         if isinstance(details, list):
-            messages.extend(d.get('message') for d in details if isinstance(d, dict) and isinstance(d.get('message'), str))
+            for detail in details:
+                if isinstance(detail, dict):
+                    pieces = [detail.get(key) for key in ('message', 'extra_info') if isinstance(detail.get(key), str)]
+                    if pieces:
+                        messages.append(' — '.join(pieces))
         if not messages and isinstance(entry.get('errors'), str):
             messages.append(entry['errors'])
     return '; '.join(messages) if messages else 'Platform detail unavailable'
@@ -77,8 +81,9 @@ def render_issues(snapshot, previous_snapshots, baseline, *, history_incomplete)
              f'History scan incomplete: {history_incomplete}. Only matching source and coverage are compared.',
              'Baseline unavailable.' if baseline_issues is None else f"Baseline snapshot: {_cell(baseline['snapshot_id'])}.",
              'A missing baseline observation does not prove the issue is new or resolved.',
+             'Platform evidence is a shortened preview; inspect the referenced snapshot for all retained details.',
              '',
-             '| Product ID | SKU | Issue | Stock | Platform evidence | First observed in scanned history | Baseline |',
+             '| Product ID | SKU | Issue | Stock | Platform evidence preview | First observed in scanned history | Baseline |',
              '|---|---|---|---|---|---|---|']
     for issue in issues[:ISSUE_LIMIT]:
         key = (str(issue['id']), issue['reason'])

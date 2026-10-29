@@ -86,6 +86,15 @@ def test_audit_treats_legacy_markdown_as_literal_text():
     assert '<img' not in html and '<a ' not in html
 
 
+def test_audit_keeps_actionable_platform_extra_info():
+    from app.services import emag_audit
+    snap={'store_id':'demo-ro','platform':'emag','marketplace':'RO','source':'api','coverage':['offers'],
+          'captured_at':'2026-10-28T00:00:00+00:00','data':{'offers':[{'id':1,
+          'validation_status':[{'value':8, 'error_details':[{'message':'Other reasons',
+          'extra_info':'Correct product type'}]}]}]}}
+    assert 'Correct product type' in emag_audit.render_issues(snap,[],None,history_incomplete=False)
+
+
 def test_full_audit_does_not_render_untrusted_source_links(tmp_path, monkeypatch):
     import markdown
     from app.core.config import settings
