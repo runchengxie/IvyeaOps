@@ -31,13 +31,13 @@ function Demo() {
   return <MemoryRouter initialEntries={['/dashboard']}>
     <div className="demo-layout">
       <aside className="demo-sidebar">
-        <div className="brand"><span className="brand-mark">I</span><span>IvyeaOps<small>eMAG 工作台</small></span></div>
+        <div className="brand"><span className="brand-mark">i</span><span>ivyeaops<small>模拟工作台</small></span></div>
         <div className="sidebar-label">模拟工作区</div>
         <nav aria-label="演示导航">{pages.map(([path, label, icon]) => <NavLink key={path} to={path} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}><span aria-hidden="true">{icon}</span>{label}</NavLink>)}</nav>
         <a className="docs-link" href="../zh-CN/index.html">查看项目文档 ↗</a>
       </aside>
       <div className="demo-body">
-        <header className="demo-header"><div><span className="header-kicker">IVYEAOPS / EMAG</span><strong>运营工作台</strong></div><div className="header-actions"><a href="../zh-CN/index.html">使用文档</a><button onClick={() => window.location.reload()}>重置演示</button></div></header>
+        <header className="demo-header"><div><span className="header-kicker">ivyeaops / EMAG</span><strong>运营工作台</strong></div><div className="header-actions"><a href="../zh-CN/index.html">使用文档</a><button onClick={() => window.location.reload()}>重置演示</button></div></header>
         <div className="demo-notice" role="status"><span className="notice-dot"/><div><strong>模拟演示</strong><span>所有商品、订单与操作均为虚构数据。修改只保存在当前页面，刷新即重置。</span></div></div>
         <div className="demo-content"><Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace/>}/>

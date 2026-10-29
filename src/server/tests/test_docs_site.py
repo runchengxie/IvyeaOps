@@ -24,7 +24,8 @@ def test_site_build_has_localized_pages_and_resolves_local_links(tmp_path):
                             cwd=tmp_path, capture_output=True, encoding='utf-8', timeout=45)
     assert result.returncode == 0, result.stderr
     assert (destination / 'index.html').is_file()
-    assert 'eMAG' in (destination / 'en/index.html').read_text('utf-8')
+    assert 'ivyeaops' in (destination / 'en/index.html').read_text('utf-8')
+    assert 'https://github.com/runchengxie/ivyeaops' in (destination / 'en/index.html').read_text('utf-8')
     assert 'eMAG' in (destination / 'zh-CN/index.html').read_text('utf-8')
     assert (destination / 'assets/emag-workbench.png').is_file()
     assert 'synthetic' in (destination / 'en/index.html').read_text('utf-8').lower()

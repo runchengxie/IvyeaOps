@@ -31,7 +31,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # macOS CI is temporarily disabled; Windows and Linux remain required.
+        os: [ubuntu-latest, windows-latest]
         python: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4

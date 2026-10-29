@@ -58,7 +58,7 @@ export default function UpdateModal({
       }
     }
     if (!stopped.current) {
-      setError("等待服务重启超时。请查看安装目录 logs\\update.log,或手动重启 IvyeaOps。");
+      setError("等待服务重启超时。请查看安装目录 logs\\update.log,或手动重启 ivyeaops。");
       setPhase("error");
     }
   }, [currentVersion]);
@@ -201,7 +201,7 @@ export default function UpdateModal({
           )}
           {busy && (
             <span style={{ fontSize: "var(--fs-10)", color: "var(--t3)", alignSelf: "center" }}>
-              更新期间请勿关闭 IvyeaOps 窗口
+              更新期间请勿关闭 ivyeaops 窗口
             </span>
           )}
         </div>

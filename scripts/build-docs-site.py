@@ -14,7 +14,7 @@ from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
 
 ROOT = Path(__file__).resolve().parents[1]
-REPOSITORY = 'https://github.com/runchengxie/IvyeaOps'
+REPOSITORY = 'https://github.com/runchengxie/ivyeaops'
 PAGES = {
     'en': {'index': 'README.md', 'capabilities': 'docs/emag-capability-map.md',
            'architecture': 'docs/architecture.md', 'installation': 'docs/installation.md',
@@ -58,7 +58,7 @@ class RewriteLinks(Treeprocessor):
                 element.set('href', urlunsplit(('', '', dest, parsed.query, parsed.fragment)))
             else:
                 kind = 'tree' if target.is_dir() else 'blob'
-                path = f'/runchengxie/IvyeaOps/{kind}/main/{quote(relative.as_posix(), safe="/")}'
+                path = f'/runchengxie/ivyeaops/{kind}/main/{quote(relative.as_posix(), safe="/")}'
                 element.set('href', urlunsplit(('https', 'github.com', path, parsed.query, parsed.fragment)))
         return root
 
@@ -95,7 +95,7 @@ def build(output, demo_dir=None):
     (output / 'assets').mkdir(exist_ok=True)
     (output / 'assets/site.css').write_text((ROOT / 'docs/site/site.css').read_text('utf-8'), encoding='utf-8')
     (output / 'assets/emag-workbench.png').write_bytes((ROOT / 'docs/site/emag-workbench.png').read_bytes())
-    (output / 'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=en/index.html"><title>IvyeaOps</title><a href="en/index.html">Open documentation</a></html>', encoding='utf-8')
+    (output / 'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=en/index.html"><title>ivyeaops</title><a href="en/index.html">Open documentation</a></html>', encoding='utf-8')
     for lang, pages in PAGES.items():
         for name, filename in pages.items():
             source = (ROOT / filename).resolve()
@@ -123,9 +123,9 @@ def build(output, demo_dir=None):
             page = f'''<!doctype html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Self-hosted eMAG evidence workflows and documentation.">
-<title>{title} · IvyeaOps</title><link rel="stylesheet" href="{css}"></head>
-<body><a class="skip" href="#content">{skip_label}</a><header class="header"><div class="header-inner"><a class="brand" href="{home}"><span class="brand-mark">I</span><span>IvyeaOps <small>for eMAG</small></span></a><div class="header-actions"><a href="{other_url}" hreflang="{other}">{other_label}</a><a class="github" href="{REPOSITORY}">GitHub ↗</a></div></div></header>
-<div class="layout"><aside class="sidebar"><p class="sidebar-label">{nav_label}</p><nav aria-label="{nav_label}">{nav}</nav><div class="sidebar-note">eMAG RO<br><span>{source_note}</span></div></aside><main id="content" class="content"><div class="eyebrow">IVYEAOPS <span>/</span> {title}</div><article>{content}</article><footer>AGPL-3.0 · <a href="{REPOSITORY}">Source on GitHub</a></footer></main></div></body></html>'''
+<title>{title} · ivyeaops</title><link rel="stylesheet" href="{css}"></head>
+<body><a class="skip" href="#content">{skip_label}</a><header class="header"><div class="header-inner"><a class="brand" href="{home}"><span class="brand-mark">i</span><span>ivyeaops</span></a><div class="header-actions"><a href="{other_url}" hreflang="{other}">{other_label}</a><a class="github" href="{REPOSITORY}">GitHub ↗</a></div></div></header>
+<div class="layout"><aside class="sidebar"><p class="sidebar-label">{nav_label}</p><nav aria-label="{nav_label}">{nav}</nav><div class="sidebar-note">eMAG RO<br><span>{source_note}</span></div></aside><main id="content" class="content"><div class="eyebrow">ivyeaops <span>/</span> {title}</div><article>{content}</article><footer>AGPL-3.0 · <a href="{REPOSITORY}">Source on GitHub</a></footer></main></div></body></html>'''
             target = output / dest
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(page, encoding='utf-8')
