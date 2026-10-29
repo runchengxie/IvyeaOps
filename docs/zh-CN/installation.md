@@ -2,7 +2,7 @@
 
 [英文权威版本](../installation.md)
 
-安装脚本接受 Python 3.11+ 和 Node.js 20+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 配置 Linux、Windows、macOS，不代表某个提交已在这些环境实际运行。
+安装脚本接受 Python 3.11+ 和 Node.js 20+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 后端测试矩阵覆盖 Linux 和 Windows，macOS CI 暂时停用。配置不代表某个提交已在这些环境实际运行。
 
 运行环境、test 和可选 MCP test requirements 分别位于 `src/server`。安装脚本、CI 和发布构建默认使用 `configs/ivyea-agent.ref` 中的 IvyeaAgent 标签，目前为 `v1.16.9`。显式设置 `IVYEA_AGENT_REF` 可以覆盖默认值。已有安装、本地或打包的 Agent 源码可能使用不同版本；Git 标签并非不可变。不要假设此 fork 已发布二进制包。
 
