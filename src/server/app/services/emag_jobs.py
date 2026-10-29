@@ -29,6 +29,13 @@ def compare(before, after):
             return number if number.is_finite() else str(value)
         except InvalidOperation:
             return str(value)
+    def has_details(value):
+        values = value if isinstance(value, list) else [value]
+        return any(isinstance(item, dict) and 'error_details' in item for item in values)
+    def without_details(value):
+        if isinstance(value, list): return [without_details(item) for item in value]
+        if isinstance(value, dict): return {k: v for k, v in value.items() if k not in ('error_details', 'error_details_truncated')}
+        return value
     old, new = index(before), index(after)
     result = []
     for key in sorted(old.keys() | new.keys()):
@@ -37,7 +44,12 @@ def compare(before, after):
             continue
         for field in ('sale_price','general_stock','offer_validation_status','validation_status'):
             a,b = old[key].get(field),new[key].get(field)
-            equal = normalized(a) == normalized(b) if field in ('sale_price','general_stock') else a == b
+            if field in ('sale_price','general_stock'):
+                equal = normalized(a) == normalized(b)
+            elif has_details(a) != has_details(b):
+                equal = without_details(a) == without_details(b)
+            else:
+                equal = a == b
             if not equal: result.append({'id': key,'field': field,'before': a,'after': b})
     return result
 

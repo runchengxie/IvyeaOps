@@ -17,7 +17,7 @@ def main(argv=None):
         user,password=read_emag_credentials()
         try:
             with httpx.Client(timeout=35,follow_redirects=False) as client:
-                evidence=emag_business.collect(client,httpx.BasicAuth(user,password),args.days)
+                evidence=emag_business.collect(client,httpx.BasicAuth(user,password),args.days,secrets=(user,password))
             return emag_readonly.redact(evidence,(user,password))
         finally:
             del user,password

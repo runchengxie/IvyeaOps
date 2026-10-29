@@ -18,7 +18,7 @@ def main(argv=None):
         print('Invalid store label or configured credential unavailable.');return 2
     try:
         with httpx.Client(timeout=35,follow_redirects=False) as client:
-            evidence=emag_business.collect(client,httpx.BasicAuth(user,password),args.days)
+            evidence=emag_business.collect(client,httpx.BasicAuth(user,password),args.days,secrets=(user,password))
         evidence=emag_readonly.redact(evidence,(user,password))
     except (ValueError,httpx.HTTPError,ImportError):
         print('Read-only collection incomplete; no snapshot imported.');return 1

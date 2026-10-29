@@ -62,6 +62,52 @@ def test_missing_stock_is_unknown_and_multiple_statuses_are_preserved():
     assert emag.project_offer(row)['validation_status'] == [{'value': 9}, {'value': 3}]
 
 
+def test_structured_validation_reasons_are_bounded_and_exclude_documents():
+    row = {'id': 1, 'validation_status': [{'value': 8, 'errors': {
+        'seller_input': {'description': 'PRIVATE DOCUMENT', 'photo_gallery': ['https://secret.example/photo']},
+        'errors': [{'code': 'naming:comment', 'section': 'name',
+                    'message': {'en_GB': 'Fix product type. https://secret.example/file', 'ro_RO': 'ignored'},
+                    'extra_info': 'Check title', 'identifier': 'https://secret.example/image'}]}}]}
+    status = emag.project_offer(row)['validation_status'][0]
+    assert status['errors'] == 'Structured validation details omitted; inspect seller portal.'
+    assert status['error_details'] == [{'code': 'naming:comment', 'section': 'name',
+        'message': 'Fix product type. [URL omitted]', 'extra_info': 'Check title'}]
+    assert 'PRIVATE DOCUMENT' not in json.dumps(status)
+    assert 'secret.example' not in json.dumps(status)
+
+
+def test_validation_reasons_bound_large_inputs():
+    errors = [{'code': f'field:error{i}', 'message': {'en_GB': 'x' * 1000}} for i in range(12)]
+    status = emag.project_offer({'id': 1, 'validation_status': [{'value': 8, 'errors': {'errors': errors}}]})['validation_status'][0]
+    assert len(status['error_details']) == 8
+    assert len(status['error_details'][0]['message']) <= 256
+    assert status['error_details_truncated'] is True
+
+
+def test_duplicate_validation_notices_do_not_hide_other_reasons():
+    repeated = {'code': 'photo:resized', 'message': {'en_GB': 'Image resized'}}
+    errors = [repeated] * 9 + [{'code': 'category:changed', 'message': {'en_GB': 'Category changed'}}]
+    status = emag.project_offer({'id': 1, 'validation_status': [{'value': 8, 'errors': {'errors': errors}}]})['validation_status'][0]
+    assert [entry['code'] for entry in status['error_details']] == ['photo:resized', 'category:changed']
+
+
+def test_validation_reasons_exclude_invalid_fields_and_redact_credentials():
+    row = {'id': 1, 'validation_status': [{'value': 8, 'errors': {'errors': [
+        None, {'code': 'https://private.example', 'section': {'unexpected': 'value'},
+               'message': {'en_GB': 'Contact operator@example.com with secret'},
+               'extra_info': {'unstructured': 'private'}}]}}]}
+    projected = emag.redact(emag.project_offer(row), ('secret',))
+    status = projected['validation_status'][0]
+    assert status['error_details'] == [{'message': 'Contact [email omitted] with [REDACTED]'}]
+    assert status['error_details_truncated'] is True
+
+
+def test_unknown_structured_validation_shape_retains_legacy_placeholder():
+    status = emag.project_offer({'id': 1, 'validation_status': [{'value': 8,
+        'errors': {'seller_input': {'description': 'private'}, 'errors': 'malformed'}}]})['validation_status'][0]
+    assert status == {'value': 8, 'errors': 'Structured validation details omitted; inspect seller portal.'}
+
+
 @pytest.mark.parametrize('bad', [None, {}, [], 'invalid', [{'value': '9'}], [{'value': 999}], [{'value': 1}, 'malformed']])
 def test_unknown_validation_is_not_healthy(bad):
     result = emag.summarize([{'id': 1, 'validation_status': bad, 'offer_validation_status': bad}])

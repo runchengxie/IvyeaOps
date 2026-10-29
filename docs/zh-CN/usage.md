@@ -28,6 +28,8 @@ job 退出码 0 表示报告/回执阶段完成，1 表示已记录的阶段失�
 
 `app.emag_cli --describe` 只说明采集范围，不读取凭证或调用 eMAG。`--prompt` 支持在终端隐藏输入凭证。组合业务采集和新采集任务使用 Windows 已保存凭证；离线 `--from-latest` 不需要凭证。
 
+对支持的结构化审核错误，新采集在每个状态中最多保留 8 条精简 `error_details`：`code`、`section`、平台的 `en_GB` 说明和可选的 `extra_info`。每个文本字段最多 256 字符，URL 和邮箱地址会被替换。`error_details_truncated` 表示有条目被省略或缩短。完整提交商品资料和错误标识不会保留。平台说明仍可能包含其他敏感内容，因此快照仍需保密。旧快照保留原有占位说明，不会自动补全。
+
 ## Artifacts
 
 快照和报告位于数据目录的 `store-artifacts`，每个产物上限 2 MB。报告绑定已有 `snapshot_id` 并包含来源证据。store/report ID 为 1–80 个 ASCII 字母、数字、下划线或连字符，首位为字母或数字。`captured_at` 必须有时区。

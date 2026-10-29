@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0044](./0044-emag-validation-details.md) | Bounded eMAG validation evidence | 2026-10-29 |
 | [0043](./0043-python-security-migration.md) | Python 3.11 security migration | 2026-10-29 |
 | [0042](./0042-metadata-and-docker-retirement.md) | Metadata locations and Docker deployment retirement | 2026-10-29 |
 | [0041](./0041-katex-security-override.md) | Shared patched KaTeX version | 2026-10-29 |
