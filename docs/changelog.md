@@ -8,6 +8,7 @@
 
 ## [Unreleased]
 
+- Expand manual eMAG audit reports with bounded issue details, source-compatible observation history and baseline comparisons.
 - Preserve bounded, redacted eMAG validation reasons in new snapshots and avoid reporting their introduction as a platform status change.
 - Link to the project site and show the workbench with synthetic data on its overview pages.
 - Require Python 3.11+ and update FastAPI, Starlette and Pillow to address dependency advisories. Back up an older virtual environment before reinstalling; preserve configuration and data.

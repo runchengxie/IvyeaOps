@@ -57,6 +57,8 @@ Save it as a local file and run `python -m app.store_cli import-snapshot FILE` f
 
 Run receipts are in `store-artifacts/jobs/<store>/`. Modes are `fresh_collection` and `existing_snapshot`. A receipt records stage, status, source/baseline IDs, report ID and timestamps. The change preview is limited to 200 entries and 64 KB, with `change_count` and `changes_truncated`. Full referenced snapshots remain the evidence for omitted changes.
 
+The manual audit report lists up to 100 current issue records with SKU, stock, compact platform evidence and the earliest observation in the current snapshot and at most 50 earlier imported snapshots with matching store, marketplace, source and coverage. It labels an incomplete history scan. This is not the time the issue began. For fresh collection, a compatible prior snapshot supplies the baseline; a missing observation is not proof of resolution. Up to 50 baseline issues not observed in the current snapshot are listed. Replay has no change baseline. The existing receipt and snapshot formats remain unchanged.
+
 Missing stock is not zero. Numeric 10 and string `10.00` compare as the same value. An absent product is an observation, not confirmed delisting. Invoice amounts preserve reported signs/currencies and do not establish payment, cost or profit. Return requests are not proof of refunds.
 
 ## APIs and MCP

@@ -4,7 +4,7 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
-from app.services import store_artifacts as artifacts, emag_operations, emag_business
+from app.services import store_artifacts as artifacts, emag_operations, emag_business, emag_audit
 
 
 def _root(store_id):
@@ -91,18 +91,22 @@ def run(store_id, collect_fn=None):
                 preview.append(change)
             receipt['changes']=preview
             receipt['changes_truncated']=len(preview)!=len(delta)
+            history, history_incomplete = emag_audit.history(snapshot)
+            issue_details = emag_audit.render_issues(snapshot, history, previous if collect_fn else None,
+                                                      history_incomplete=history_incomplete)
             text = '\n'.join(['# eMAG manual audit',f"Source: {snapshot['snapshot_id']}",
                 f"Captured: {snapshot['captured_at']}",f"Mode: {receipt['mode']}",
                 f"Offers: {len(snapshot['data']['offers'])}; issue reasons: {len(issues)}",
                 f"Observed field changes: {len(delta)} (baseline available: {receipt['delta_available']})",
                 'Missing stock is unknown, not zero. Missing products are observations, not confirmed delistings.',
                 'No marketplace writes. Costs must be supplied before pricing/profit decisions.',
+                issue_details,
                 '## Issue references (first 200)',
-                *[f"- Product {str(i['id'])[:100]}: {i['reason']}" for i in issues[:200]],
+                *[f"- Product {emag_audit._cell(i['id'], 100)}: {emag_audit._cell(i['reason'], 50)}" for i in issues[:200]],
                 f"Issue references truncated: {len(issues)>200}",
-                '## Change preview',json.dumps(preview,ensure_ascii=False),
+                '## Change preview','', '    '+json.dumps(preview,ensure_ascii=False), '',
                 f"Change preview truncated: {receipt['changes_truncated']}; compare the referenced source snapshots for complete evidence.",
-                '## Source limitations',*['- '+str(x) for x in snapshot['limitations']]])
+                '## Source limitations',*['- '+emag_audit._cell(x, 500) for x in snapshot['limitations']]])
             report=artifacts.save_report(store_id,snapshot['snapshot_id'],'eMAG manual audit',text)
             receipt.update(report_id=report['report_id'],status='complete',stage='complete')
         except Exception as exc:
