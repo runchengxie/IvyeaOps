@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0047](./0047-emag-dashboard-views.md) | Source-labelled eMAG dashboard views | 2026-10-29 |
 | [0046](./0046-isolated-static-demo.md) | Isolated static eMAG demo | 2026-10-29 |
 | [0045](./0045-emag-observation-history.md) | Bounded eMAG observation history | 2026-10-29 |
 | [0044](./0044-emag-validation-details.md) | Bounded eMAG validation evidence | 2026-10-29 |

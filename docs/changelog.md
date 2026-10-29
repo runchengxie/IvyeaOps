@@ -8,6 +8,7 @@
 
 ## [Unreleased]
 
+- Add management and specialist views to the eMAG dashboard, with source-labelled metrics and explicit unavailable data.
 - Add an interactive, isolated eMAG workbench demo to the documentation site and show issue-specific review guidance in the inspection page.
 - Expand manual eMAG audit reports with bounded issue details, source-compatible observation history and baseline comparisons.
 - Preserve bounded, redacted eMAG validation reasons in new snapshots and avoid reporting their introduction as a platform status change.
