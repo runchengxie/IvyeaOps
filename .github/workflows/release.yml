@@ -17,50 +17,21 @@ permissions:
   contents: write
 
 jobs:
-  # 三个包（Linux/通用 zip、Windows exe、macOS .app）必须捆绑**同一个** IvyeaAgent 版本。
-  #
-  # 此前每个作业各自去问一次 GitHub API，各自带一句 `|| AGENT_REF=main` 的静默兜底。
-  # v1.6.0 那次发版就露了馅：Linux 和 Windows 解析到 v1.10.3，macOS 的 curl 没成、
-  # 悄悄回退到了 main。那次 main 恰好等于 v1.10.3，没造成差异 —— 但只要 main 领先于
-  # 最新 tag 一步，同一个版本号的三个包里就会装着不同的 agent，且没有任何报错。
-  #
-  # 所以：解析一次，输出给所有人用；解析不出来就让发版失败，不猜。
+  # All bundles use the same validated ref unless explicitly overridden.
   agent-ref:
-    name: 确定要捆绑的 IvyeaAgent 版本
+    name: Resolve IvyeaAgent version
     runs-on: ubuntu-latest
     outputs:
       ref: ${{ steps.pick.outputs.ref }}
     steps:
-      - name: 解析 ivyea-agent 的最新 release tag
+      - uses: actions/checkout@v4
+      - name: Resolve IvyeaAgent ref
         id: pick
         env:
-          # 带上 token：匿名调 api.github.com 走的是**按 IP** 的限流，GitHub 托管 runner
-          # 的出口 IP 是共享的，撞额度只是时间问题 —— macOS 那次多半就是这么失败的。
-          GH_TOKEN: ${{ github.token }}
-          OVERRIDE: ${{ vars.IVYEA_AGENT_REF }}
+          IVYEA_AGENT_REF: ${{ vars.IVYEA_AGENT_REF }}
         run: |
           set -euo pipefail
-          ref="${OVERRIDE:-}"
-          if [ -n "$ref" ]; then
-            echo "使用仓库变量 IVYEA_AGENT_REF 指定的版本：$ref"
-          else
-            for attempt in 1 2 3; do
-              ref=$(curl -fsSL \
-                      -H "Authorization: Bearer $GH_TOKEN" \
-                      -H "Accept: application/vnd.github+json" \
-                      "https://api.github.com/repos/Hector-xue/ivyea-agent/releases/latest" \
-                    | python3 -c "import json,sys;print(json.load(sys.stdin).get('tag_name') or '')" 2>/dev/null) || ref=""
-              [ -n "$ref" ] && break
-              echo "第 $attempt 次没取到，5 秒后重试"
-              sleep 5
-            done
-          fi
-          if [ -z "$ref" ]; then
-            echo "::error::取不到 ivyea-agent 的最新 release tag。这里**故意不回退到 main** ——"
-            echo "::error::悄悄换成 main 会让发行包装上未发布的 agent 代码，而且三个平台的包可能各装各的。"
-            echo "::error::要临时指定版本，请设仓库变量 IVYEA_AGENT_REF（如 v1.10.3）后重跑。"
-            exit 1
-          fi
+          ref=$(python3 scripts/agent-ref.py)
           echo "bundling ivyea-agent ref: $ref"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
@@ -321,12 +292,14 @@ jobs:
           Copy-Item -Recurse docs "$stage/docs"
           New-Item -ItemType Directory -Force "$stage/configs" | Out-Null
           Copy-Item configs/server.env.example "$stage/configs/server.env.example"
+          Copy-Item configs/ivyea-agent.ref "$stage/configs/ivyea-agent.ref"
           # Skills are seeded into ~/.hermes/skills on startup (ASIN/广告审计、Listing
           # 板块依赖它们);the frozen exe reads them from next to itself, so they MUST
           # ship in the bundle — the frozen build does not embed them.
           Copy-Item -Recurse skills "$stage/skills"
           Copy-Item scripts/stop-hidden.ps1 "$stage/scripts/stop-hidden.ps1"
           Copy-Item scripts/install-components.ps1 "$stage/scripts/install-components.ps1"
+          Copy-Item scripts/agent-ref.py "$stage/scripts/agent-ref.py"
           Copy-Item scripts/update-exe.ps1 "$stage/scripts/update-exe.ps1"
           Copy-Item scripts/windows-action-gui.ps1 "$stage/scripts/windows-action-gui.ps1"
           foreach ($entry in @('manage.ps1','start-console.ps1','start-hidden.ps1','start-hidden.vbs','start.bat','start-lan.bat','install.bat','install.ps1','install-exe.ps1','migrate-config.py')) {

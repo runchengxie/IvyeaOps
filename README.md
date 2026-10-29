@@ -55,6 +55,7 @@ English is canonical. Chinese translations follow the same facts and identifiers
 
 | Topic | English | zh-CN |
 |---|---|---|
+| eMAG capabilities and migration | [capability map](docs/emag-capability-map.md) | [能力边界与迁移](docs/zh-CN/emag-capability-map.md) |
 | Architecture | [architecture](docs/architecture.md) | [架构](docs/zh-CN/architecture.md) |
 | Installation | [installation](docs/installation.md) | [安装](docs/zh-CN/installation.md) |
 | Configuration | [configuration](docs/configuration.md) | [配置](docs/zh-CN/configuration.md) |

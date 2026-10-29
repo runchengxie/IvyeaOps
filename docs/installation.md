@@ -6,7 +6,7 @@
 
 Installers accept Python 3.11+ and Node.js 20+; CI builds use Node.js 22. This audit ran locally on Windows with Python 3.12.13 and Node.js 24.22.1. CI defines Linux, Windows and macOS jobs, but a configured job is not evidence that it ran for a particular commit.
 
-The backend runtime requirements, test requirements and optional MCP test requirements are separate files under `src/server`. IvyeaAgent is installed separately by installation/release workflows. Its selected release and installed version can differ. Do not assume the fork has a published binary release.
+The backend runtime requirements, test requirements and optional MCP test requirements are separate files under `src/server`. Installers, CI and release builds default to the IvyeaAgent tag in `configs/ivyea-agent.ref`, currently `v1.16.9`. An explicit `IVYEA_AGENT_REF` overrides the default. Existing installations and local or bundled Agent sources may use a different version; a Git tag is not immutable. Do not assume the fork has a published binary release.
 
 Windows source install and launch:
 
