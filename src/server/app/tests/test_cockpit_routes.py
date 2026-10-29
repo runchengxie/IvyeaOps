@@ -19,31 +19,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-def _auth_deps(app, names=("require_admin", "require_user")):
-    """把路由树上真正在用的鉴权依赖函数对象捞出来（按函数名认）。
-
-    **为什么不能直接写 `dependency_overrides[security.require_admin]`**：
-    `dependency_overrides` 拿函数对象当键。别的测试文件会 `reload(app.core.security)`，
-    但 `app.routers.*` 这些模块**不会**跟着重载（它们已经在 sys.modules 里），
-    于是路由里绑的还是老的函数对象，而 `import app.core.security` 拿到的是新的 ——
-    两个对象不相等，override 静静地不生效，请求照样走真鉴权拿 401。
-    单跑这个文件全绿、跟着全量跑就红，根因就是这个。
-
-    反过来"我也 reload 一次 security"能治好自己，却会把同样的问题甩给下一个
-    只 reload config+main 的测试文件（实测把 test_ad_audit 打红了 14 条）。
-    按名字从路由上取，谁都不用改。
-    """
-    found = set()
-    for route in app.routes:
-        stack = list(getattr(getattr(route, "dependant", None), "dependencies", []) or [])
-        while stack:
-            dep = stack.pop()
-            if dep.call is not None and getattr(dep.call, "__name__", "") in names:
-                found.add(dep.call)
-            stack.extend(dep.dependencies)
-    return found
-
-
 @pytest.fixture
 def app_mod(monkeypatch):
     monkeypatch.setenv("IVYEA_OPS_DEV_MODE", "1")
@@ -58,9 +33,6 @@ def app_mod(monkeypatch):
 
 @pytest.fixture
 def admin_client(app_mod, monkeypatch):
-    for dep in _auth_deps(app_mod.app):
-        app_mod.app.dependency_overrides[dep] = lambda: "admin"
-
     async def _promo_board(sids=None, **kw):
         return {
             "generated_at": "2026-08-23T00:00:00+00:00", "source": "lingxing",
@@ -110,10 +82,11 @@ def admin_client(app_mod, monkeypatch):
     monkeypatch.setattr(ads_board_service, "board", _ads_board)
     monkeypatch.setattr(ads_board_service, "hourly", _hourly)
 
+    from app.core.security import ADMIN_ID, issue_session
     with TestClient(app_mod.app) as c:
         c.headers.update({"Origin": "https://test.example.com"})
+        c.cookies.set("ivyea_ops_session", issue_session(ADMIN_ID, "admin"))
         yield c
-    app_mod.app.dependency_overrides.clear()
 
 
 def test_promotions_contract(admin_client):
@@ -172,48 +145,47 @@ def test_adjust_creates_a_ticket_and_does_not_execute(admin_client, monkeypatch)
     assert created["rationale"] == "(驾驶舱直调)"
 
 
-def test_every_cockpit_route_is_admin_gated(app_mod):
-    """驾驶舱这两块读的是自家经营数据、还能发起改投放的工单 —— 每一条路由都必须
-    挂着 require_admin。
+def _assert_admin_only_routes(app_mod, monkeypatch, prefix):
+    """Verify every documented route with real signed sessions, not route internals."""
+    import re
+    from app.core.security import issue_session
+    from app.services import users_service
 
-    这里做的是**结构断言**而不是"用普通用户打一发看是不是 403"：
-    ``require_admin`` 在没有会话 cookie 时会信任上游被 override 的 require_user
-    （见它自己的 docstring，那是给测试留的后路）。所以拿 TestClient + override
-    去模拟"普通用户"，测的其实是那条后路，不是生产行为。直接检查依赖挂没挂上，
-    才是真的在守生产的那道闸。
-    """
-    def dep_names(route):
-        out = set()
-        stack = list(getattr(route.dependant, "dependencies", []))
-        while stack:
-            d = stack.pop()
-            if d.call is not None:
-                out.add(getattr(d.call, "__name__", ""))
-            stack.extend(d.dependencies)
-        return out
-
-    cockpit = [r for r in app_mod.app.routes
-               if getattr(r, "path", "").startswith("/api/cockpit")]
-    assert cockpit, "没有找到任何 /api/cockpit 路由"
-    for route in cockpit:
-        assert "require_admin" in dep_names(route), f"{route.path} 没有挂 require_admin"
+    monkeypatch.setattr(users_service, "get_by_id", lambda uid: {
+        "id": uid, "email": "operator@example.invalid", "role": "user", "status": "active",
+        "permissions": [],
+    })
+    paths = app_mod.app.openapi()["paths"]
+    operations = [(method, path) for path, definition in paths.items() if path.startswith(prefix)
+                  for method in definition if method in {"get", "post", "put", "patch", "delete"}]
+    assert operations, f"No documented routes for {prefix}"
+    with TestClient(app_mod.app) as client:
+        client.headers.update({"Origin": "https://test.example.com"})
+        for method, path in operations:
+            url = re.sub(r"\{[^}]+\}", "123", path)
+            client.cookies.clear()
+            assert client.request(method.upper(), url, json={}).status_code == 401, (method, path)
+            client.cookies.set("ivyea_ops_session", issue_session(123, "user"))
+            assert client.request(method.upper(), url, json={}).status_code == 403, (method, path)
 
 
-def test_cockpit_is_gated_like_lingxing(app_mod):
-    """和 /api/lingxing 同源同敏感度 —— 两处权限必须一致，别一边紧一边松。"""
-    def has_admin(prefix):
-        for r in app_mod.app.routes:
-            if getattr(r, "path", "").startswith(prefix):
-                stack = list(getattr(r.dependant, "dependencies", []))
-                names = set()
-                while stack:
-                    d = stack.pop()
-                    if d.call is not None:
-                        names.add(getattr(d.call, "__name__", ""))
-                    stack.extend(d.dependencies)
-                if "require_admin" not in names:
-                    return False
-        return True
+def test_every_cockpit_route_is_admin_gated(app_mod, monkeypatch):
+    _assert_admin_only_routes(app_mod, monkeypatch, "/api/cockpit")
 
-    assert has_admin("/api/lingxing")
-    assert has_admin("/api/cockpit")
+
+def test_cockpit_is_gated_like_lingxing(app_mod, monkeypatch):
+    _assert_admin_only_routes(app_mod, monkeypatch, "/api/lingxing")
+
+
+def test_admin_check_rejects_an_unguarded_route(monkeypatch):
+    from types import SimpleNamespace
+    from fastapi import FastAPI
+
+    app = FastAPI()
+
+    @app.get("/api/cockpit/unprotected")
+    def unprotected():
+        return {"ok": True}
+
+    with pytest.raises(AssertionError):
+        _assert_admin_only_routes(SimpleNamespace(app=app), monkeypatch, "/api/cockpit")

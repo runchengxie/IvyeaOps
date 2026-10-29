@@ -100,7 +100,7 @@ def summarize(rows):
     for row in rows:
         summary['offers'] += 1
         stock = row.get('general_stock')
-        known = type(stock) in (int, float) and math.isfinite(stock) and stock >= 0
+        known = (type(stock) is int or (type(stock) is float and math.isfinite(stock))) and stock >= 0
         summary['stock_unknown' if not known else ('stock_positive' if stock > 0 else 'stock_zero')] += 1
         reasons = []
         for field, counter, allowed in (

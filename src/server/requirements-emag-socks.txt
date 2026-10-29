@@ -1,2 +1,2 @@
-# Optional: only needed when the caller's proxy environment uses SOCKS.
+# Compatibility entry point for older installations; current runtime requirements include httpx[socks].
 socksio==1.0.0

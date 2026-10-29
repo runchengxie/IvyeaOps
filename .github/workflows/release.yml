@@ -319,6 +319,8 @@ jobs:
           Copy-Item -Recurse src/client/dist "$stage/client/dist"
           Copy-Item -Recurse src/client/public "$stage/client/public"
           Copy-Item -Recurse docs "$stage/docs"
+          New-Item -ItemType Directory -Force "$stage/configs" | Out-Null
+          Copy-Item configs/server.env.example "$stage/configs/server.env.example"
           # Skills are seeded into ~/.hermes/skills on startup (ASIN/广告审计、Listing
           # 板块依赖它们);the frozen exe reads them from next to itself, so they MUST
           # ship in the bundle — the frozen build does not embed them.
@@ -422,6 +424,8 @@ jobs:
           cp -R src/client/dist "$res/client/dist"
           cp -R src/client/public "$res/client/public"
           cp -R docs "$res/docs"
+          mkdir -p "$res/configs"
+          cp configs/server.env.example "$res/configs/server.env.example"
           cp -R skills "$res/skills"
           echo "$tag" > "$res/VERSION"
           # zip the .app (ditto preserves the bundle bit + symlinks)

@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 from app.core.layout import code_root, environment_file
 from app.core.version import runtime_root
 
@@ -23,3 +25,11 @@ def test_existing_ignored_environment_is_not_lost(tmp_path):
     assert environment_file(tmp_path)==old
     current=tmp_path/'src/server/.env';current.write_text('NEW=preferred',encoding='utf-8')
     assert environment_file(tmp_path)==current
+
+
+def test_application_rejects_unsupported_python_before_loading_services():
+    root = Path(__file__).resolve().parents[1]
+    script = "import sys; sys.version_info = (3, 10, 0); import app"
+    result = subprocess.run([sys.executable, '-c', script], cwd=root, capture_output=True, text=True, timeout=15)
+    assert result.returncode != 0
+    assert 'Python 3.11 or newer is required' in result.stderr

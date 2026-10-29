@@ -398,7 +398,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="IvyeaOps",
-    description="Personal Amazon operations hub",
+    description="Self-hosted eMAG evidence and legacy marketplace operations",
     version="0.1.0",
     lifespan=lifespan,
 )

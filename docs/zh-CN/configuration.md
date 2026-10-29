@@ -4,7 +4,11 @@
 
 ## 配置来源
 
+参考模板位于 [`configs/server.env.example`](../../configs/server.env.example)。新建安装时，源码版将其复制到 `src/server/.env`，冻结发行包复制到 `server/.env`。填写必要的值，并保留已有配置。
+
 `src/server/app/core/config.py` 在启动时读取环境变量。源码使用 `src/server/.env`，缺失时兼容旧 `server/.env`；冻结包使用 `server/.env`。`IVYEA_OPS_ROOT` 可显式指定运行环境 root。已有进程环境值优先于 dotenv。
+
+标准运行依赖包含 HTTP 的 SOCKS 代理支持。
 
 可运行时修改的设置在数据目录的 `hub_settings.json`，通过应用系统设置管理。回退由各集成决定，不保证所有空值都有环境回退。实际键由 `src/server/app/core/hub_settings.py` 和消费方定义。
 

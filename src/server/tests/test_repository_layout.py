@@ -21,6 +21,8 @@ def test_canonical_docs_and_github_entry_points():
     assert 'docs/changelog.md' in workflow
     assert '> docs/version' in workflow
     assert '$stage/VERSION' in workflow and '$res/VERSION' in workflow
+    assert '$stage/configs/server.env.example' in workflow
+    assert '$res/configs/server.env.example' in workflow
     assert 'scripts/stop.bat' in workflow and 'scripts/update-bundle.bat' in workflow
 
 
