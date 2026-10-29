@@ -8,4 +8,4 @@ Use the commands in [operations](operations.md) and the dependency files under `
 
 Inspect branch, remotes, worktrees and submodules before changing them. Do not initialize missing submodules or upgrade gitlinks as part of a documentation audit. Preserve existing work. Follow the session's publishing authorization and use PRs for protected branches. Explain the problem, resulting behavior and actual validation in the PR.
 
-Changes are licensed under [AGPL-3.0](../LICENSE). Preserve upstream attribution.
+Changes are licensed under [AGPL-3.0](license). Preserve upstream attribution.

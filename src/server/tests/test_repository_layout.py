@@ -19,6 +19,8 @@ def test_canonical_docs_and_github_entry_points():
         assert f'../docs/{name.lower()}.md' in text
     workflow=(ROOT/'.github/workflows/release.yml').read_text('utf-8')
     assert 'docs/changelog.md' in workflow
+    assert '> docs/version' in workflow
+    assert '$stage/VERSION' in workflow and '$res/VERSION' in workflow
     assert 'scripts/stop.bat' in workflow and 'scripts/update-bundle.bat' in workflow
 
 
@@ -30,7 +32,6 @@ def test_canonical_docs_and_github_entry_points():
     ('start','source',['-Lan'],'start-console.ps1'),
     ('stop','source',[],'stop-hidden.ps1'),
     ('update','bundle',[],'update-exe.ps1'),
-    ('setup-docker','source',[],'setup-docker.ps1'),
 ])
 def test_windows_dispatch_is_side_effect_free_in_dry_run(action,target,extra,entry,tmp_path):
     pwsh=shutil.which('pwsh')
@@ -91,3 +92,11 @@ def test_documented_snapshot_is_valid_and_localizations_match():
         StoreSnapshot.model_validate(example)
         examples.append(example)
     assert examples[0]==examples[1]
+
+
+def test_retired_docker_dispatch_is_rejected():
+    pwsh=shutil.which('pwsh')
+    if not pwsh:
+        pytest.skip('PowerShell unavailable on this runner')
+    result=subprocess.run([pwsh,'-NoProfile','-File',str(ROOT/'scripts/manage.ps1'),'-Action','setup-docker','-DryRun'],capture_output=True,timeout=15)
+    assert result.returncode != 0

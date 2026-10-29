@@ -41,7 +41,7 @@ CI 将后端 suite 和平台矩阵分开。安装 test/MCP test requirements，�
 - 资料质量页展示后端 `stock_unknown` 汇总，包含缺失、格式异常和负数库存。
 - Agent locale 不覆盖整个工作台，语言列表保存 ID 不使用 `en-US`。
 - IvyeaAgent 是外部依赖，本次验证本仓库 adapter 与已安装版本，不代表验证每个上游版本和模型服务。
-- Docker、二进制包和 systemd 修改在部署前需要相应环境验证。
+- 二进制包和 systemd 修改在部署前需要相应环境验证。
 
 检查范围、实际结果及未执行项见[英文审计记录](../maintenance-audit.md)。
 

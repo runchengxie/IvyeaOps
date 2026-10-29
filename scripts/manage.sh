@@ -8,8 +8,7 @@ case "$action" in
   install) entry=install.sh ;;
   start) entry=start.sh ;;
   update) entry=update.sh ;;
-  setup-docker) entry=setup-docker.sh ;;
-  *) echo 'Usage: bash scripts/manage.sh {install|start|update|setup-docker} [--dry-run]' >&2; exit 2 ;;
+  *) echo 'Usage: bash scripts/manage.sh {install|start|update} [--dry-run]' >&2; exit 2 ;;
 esac
 if [ "${1:-}" = '--dry-run' ]; then printf 'bash %q\n' "$script_dir/$entry"; exit 0; fi
 exec bash "$script_dir/$entry" "$@"

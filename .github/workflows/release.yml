@@ -148,7 +148,7 @@ jobs:
       - name: Package prebuilt bundle
         run: |
           TAG="${{ steps.tag.outputs.tag }}"
-          printf '%s\n' "$TAG" > VERSION
+          printf '%s\n' "$TAG" > docs/version
           STAGE="staging/IvyeaOps"
           mkdir -p "$STAGE"
           # 复制整棵仓库（含刚构建出的 src/client/dist），排除开发/运行期产物。
@@ -323,9 +323,6 @@ jobs:
           # 板块依赖它们);the frozen exe reads them from next to itself, so they MUST
           # ship in the bundle — the frozen build does not embed them.
           Copy-Item -Recurse skills "$stage/skills"
-          # amazon-image-workflow = the Docker 采集服务 (完整主图组). Ship the source so
-          # the listing board's 「一键启动采集服务」 can find + `docker compose up` it.
-          if (Test-Path amazon-image-workflow) { Copy-Item -Recurse amazon-image-workflow "$stage/amazon-image-workflow" }
           Copy-Item scripts/stop-hidden.ps1 "$stage/scripts/stop-hidden.ps1"
           Copy-Item scripts/install-components.ps1 "$stage/scripts/install-components.ps1"
           Copy-Item scripts/update-exe.ps1 "$stage/scripts/update-exe.ps1"
@@ -426,7 +423,6 @@ jobs:
           cp -R src/client/public "$res/client/public"
           cp -R docs "$res/docs"
           cp -R skills "$res/skills"
-          [ -d amazon-image-workflow ] && cp -R amazon-image-workflow "$res/amazon-image-workflow" || true
           echo "$tag" > "$res/VERSION"
           # zip the .app (ditto preserves the bundle bit + symlinks)
           ( cd dist && ditto -c -k --sequesterRsrc --keepParent "IvyeaOps.app" "../IvyeaOps-macOS-$tag.zip" )
