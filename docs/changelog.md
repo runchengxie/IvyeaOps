@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add a read-only exact SKU CLI query that does not import a store snapshot.
+
 - Restore the legacy promotion and advertising page container styles by fixing an invalid CSS comment.
 - Add issue filters and store-bound links to captured product details, platform messages and local history; document prerequisites for future eMAG API writes.
 - Temporarily remove macOS from the CI server test matrix; Linux and Windows remain covered.

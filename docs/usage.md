@@ -22,6 +22,9 @@ The inspection page filters observed issues by product, reason, stock and local 
 
 ## CLI
 
+For a single read-only SKU check, run `.venv/Scripts/python.exe -m app.emag_cli --sku example-sku` on Windows (use `.venv/bin/python` on Unix). This queries `part_number` and prints bounded offer evidence with a capture time; it does not import a snapshot or change marketplace data. `found` requires one exact match, `not_found` means no result was returned, and ambiguous, malformed or failed responses are `incomplete`. A missing result is not proof of delisting. Do not combine `--sku` with `--store-id`; `--describe --sku example-sku` makes no request. `evidence_truncated` flags truncated text or status evidence on found results. Output may contain private seller data.
+
+
 From `src/server`, using the installed venv:
 
 ```powershell

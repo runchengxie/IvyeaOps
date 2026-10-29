@@ -18,6 +18,9 @@ eMAG 驾驶舱提供当前快照的管理视角和专员视角。指标卡在数
 
 ## CLI
 
+单件只读 SKU 核查可在 Windows 运行 `.venv/Scripts/python.exe -m app.emag_cli --sku example-sku`，Unix 使用 `.venv/bin/python`。命令按 `part_number` 查询并输出带采集时间的精简商品证据，不导入快照或修改平台数据。`found` 需要唯一精确匹配，`not_found` 表示没有返回结果；多条、不匹配、格式错误或请求失败为 `incomplete`。无结果不代表商品已下架。`--sku` 不能与 `--store-id` 同用；`--describe --sku example-sku` 不发送请求。匹配结果中的 `evidence_truncated` 标记文本或状态证据是否被截断。输出可能包含店铺私有数据。
+
+
 在 `src/server` 使用安装的 venv：
 
 ```powershell
