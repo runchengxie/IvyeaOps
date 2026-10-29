@@ -30,7 +30,7 @@ python -m pytest app/tests -q --timeout=180 --timeout-method=thread
 ruff check .
 ```
 
-CI 将后端 suite 和平台矩阵分开。安装 test/MCP test requirements，避免依赖缺失导致 skip。实际执行结果以审计表为准，不从 CI 配置推断成功。127.0.0.1:5199 的组件 harness 用合成 API 渲染真实 App，不可作为店铺证据。
+CI 将后端 suite 和平台矩阵分开，后端测试矩阵覆盖 Linux 和 Windows，macOS CI 暂时停用。安装 test/MCP test requirements，避免依赖缺失导致 skip。实际执行结果以审计表为准，不从 CI 配置推断成功。127.0.0.1:5199 的组件 harness 用合成 API 渲染真实 App，不可作为店铺证据。
 
 当前仓库没有配置覆盖率阈值、专用安全扫描器或依赖审计 CI 门禁，不能描述为这些检查已通过。`uv pip check` 检查依赖兼容性，不查漏洞。`npm audit` 需要支持 audit endpoint 的 registry，镜像可能返回实现错误。
 
