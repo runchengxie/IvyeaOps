@@ -1,8 +1,7 @@
 """Drive the `claude` CLI via stream-json and translate its event stream into
-the agents WebSocket message contract — the Python equivalent of
-claudecodeui's ``claude-sdk.js`` (the official Python SDK needs 3.10+; this host
-is 3.9, so we speak the CLI's stream-json protocol directly, exactly as the Node
-SDK does under the hood).
+the agents WebSocket message contract. The integration uses the CLI's
+stream-json protocol directly, preserving the existing agent contract independently
+of the Python SDK.
 
 Two permission paths, mirroring the SDK:
 

@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+- Require Python 3.11+ and update FastAPI, Starlette and Pillow to address dependency advisories. Back up an older virtual environment before reinstalling; preserve configuration and data.
+- Count large integer stock without floating-point overflow, include SOCKS proxy support in runtime dependencies, and scope installer Git proxy settings to its process.
+- Move the server configuration example to `configs/server.env.example` and remove the retired Docker example.
+
 - Retired the repository Docker deployment files and setup commands. Existing container deployments need their own maintained configuration.
 
 - Moved source license, version and Ruff rules into `docs` and `configs`; existing frozen bundles keep their version file layout. Removed the repository Claude instruction pointer.

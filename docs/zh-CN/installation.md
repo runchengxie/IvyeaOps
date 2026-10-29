@@ -2,7 +2,7 @@
 
 [英文权威版本](../installation.md)
 
-安装脚本接受 Python 3.9+ 和 Node.js 20+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 配置 Linux、Windows、macOS，不代表某个提交已在这些环境实际运行。
+安装脚本接受 Python 3.11+ 和 Node.js 20+，CI 构建使用 Node.js 22。本机验证环境为 Windows、Python 3.12.13、Node.js 24.22.1；CI 配置 Linux、Windows、macOS，不代表某个提交已在这些环境实际运行。
 
 运行环境、test 和可选 MCP test requirements 分别位于 `src/server`。安装/发布流程另行安装 IvyeaAgent，选中的 release 与本机已安装版本可能不同。不假设 fork 已有二进制发行包。
 
@@ -18,6 +18,8 @@ powershell -NoProfile -File scripts/manage.ps1 -Action start -Target source
 Linux/macOS 使用 `bash scripts/manage.sh install` 和 `bash scripts/manage.sh start`。安装器可能安装依赖、构建前端或提供可选组件，不能当作验证命令。Unix 前台用 Ctrl+C 停止，或管理自己的 systemd 服务。
 
 ## 旧源码安装
+
+不再支持 Python 3.9 和 3.10。安装 Python 3.11 或更新版本，停止应用，并在重新运行安装器前将旧的 `src/server/.venv` 移到备份位置。安装器不会复用旧环境；请保留 `src/server/.env`、凭证和数据目录，重启前检查自定义服务路径。
 
 跟踪目录从 `client`、`server` 迁为 `src/client`、`src/server`。Git 不会搬走其他工作区的 ignored 文件。新环境文件缺失时，运行环境兼容读取旧 `server/.env`；安装器只在新文件不存在时复制，保留旧文件，不覆盖已有新配置。
 

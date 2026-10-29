@@ -4,7 +4,11 @@
 
 ## Startup and runtime settings
 
+A reference template is available at [`configs/server.env.example`](../configs/server.env.example). For a new installation, copy it to `src/server/.env` in a source checkout or `server/.env` in a frozen bundle. Fill in the required values and preserve any existing configuration.
+
 Startup environment variables are read by `src/server/app/core/config.py`. Source installations load `src/server/.env`, falling back to legacy `server/.env` when needed. Frozen installs retain `server/.env`. `IVYEA_OPS_ROOT` can explicitly select the runtime root. Existing process environment values take precedence over dotenv values.
+
+The standard runtime dependencies include SOCKS support for HTTP proxy environments.
 
 Runtime-editable settings are stored in `hub_settings.json` under the configured data directory and managed through the application's system settings. Fallback rules are integration-specific. Do not assume every empty runtime key has an environment fallback. `src/server/app/core/hub_settings.py` and the consuming integration define the actual keys.
 

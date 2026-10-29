@@ -28,7 +28,7 @@ $env:IVYEA_OPS_DATA_DIR = 'C:\path\to\IvyeaOps\data'
 
 Linux/macOS 或不使用凭据库时，在交互终端加 `--prompt`，密码通过隐藏输入获得，不持久化。默认模式缺少凭据直接退出，不会让无人值守任务挂在输入框。
 
-请求继承进程代理环境，不修改用户级代理设置。使用 SOCKS 代理时额外安装 `pip install -r requirements-emag-socks.txt`；不使用 SOCKS 无需安装。出口 IP 必须与 eMAG 白名单一致。
+请求继承进程代理环境，不修改用户级代理设置。标准运行依赖已包含 SOCKS 支持；`requirements-emag-socks.txt` 为旧安装保留兼容入口。出口 IP 必须与 eMAG 白名单一致。
 
 ## 输出与边界
 

@@ -145,11 +145,22 @@ function Install-IvyeaAgent {
         if (-not (Test-Path $VenvPy)) {
             $python = Get-Command python -ErrorAction SilentlyContinue
             if (-not $python) { $python = Get-Command py -ErrorAction SilentlyContinue }
-            if (-not $python) { throw "Python not found. Run scripts\install.ps1 first or install Python 3.9+." }
+            if (-not $python) { throw "Python not found. Run scripts\install.ps1 first or install Python 3.11+." }
+            & $python.Source -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"
+            if ($LASTEXITCODE -ne 0) { throw "Python 3.11+ is required. Run scripts\install.ps1 with a supported interpreter." }
             Write-Info "Creating server virtualenv for IvyeaAgent..."
             & $python.Source -m venv (Join-Path $ServerRoot ".venv")
         }
         if (-not (Test-Path $VenvPy)) { throw "server virtualenv was not created: $VenvPy" }
+        & $VenvPy -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"
+        if ($LASTEXITCODE -ne 0) { throw "Existing server virtualenv requires Python 3.11+. Move it to a backup location before reinstalling." }
+
+        $pipReady = $false
+        try { & $VenvPy -m pip --version 2>$null | Out-Null; $pipReady = ($LASTEXITCODE -eq 0) } catch { $pipReady = $false }
+        if (-not $pipReady) {
+            & $VenvPy -m ensurepip --upgrade
+            if ($LASTEXITCODE -ne 0) { throw "pip is unavailable in the server virtual environment; install the Python ensurepip component." }
+        }
 
         $IvyeaAgentSource = $env:IVYEA_AGENT_LOCAL
         # Agent source shipped inside the prebuilt bundle → install OFFLINE.

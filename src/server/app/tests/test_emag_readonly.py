@@ -47,6 +47,12 @@ def test_recursive_redaction_preserves_json():
     assert redacted == {'nested': ['[REDACTED] and [REDACTED]', {'x': '[REDACTED]'}]}
 
 
+def test_large_nonnegative_integer_stock_is_counted_without_float_overflow():
+    report = emag.summarize([{'id': 1, 'general_stock': 10**400}])
+    assert report['stock_positive'] == 1
+    assert report['stock_unknown'] == 0
+
+
 def test_missing_stock_is_unknown_and_multiple_statuses_are_preserved():
     row = {'id': 1, 'status': 1, 'validation_status': [{'value': 9}, {'value': 3}],
            'offer_validation_status': {'value': 2, 'errors': 'Invalid price'}}

@@ -1,7 +1,7 @@
 ﻿# IvyeaOps 一键安装（Windows / PowerShell 5.1+）
 #
 # 做的事：
-#   1. 自动检测 Python 3.9+ 和 Node 20+；缺失则用 winget 自动安装
+#   1. 自动检测 Python 3.11+ 和 Node 20+；缺失则用 winget 自动安装
 #   2. 创建独立虚拟环境 server\.venv 并安装后端依赖
 #   3. 构建前端
 #   4. 生成 server\.env（随机密钥 + 管理员密码哈希；密码留空则自动生成并显示）
@@ -36,9 +36,17 @@ function Find-Python {
         try {
             $ver = & $bin --version 2>&1
             if ($ver -match "Python (\d+)\.(\d+)") {
-                if ([int]$Matches[1] -gt 3 -or ([int]$Matches[1] -eq 3 -and [int]$Matches[2] -ge 9)) { return $bin }
+                if ([int]$Matches[1] -gt 3 -or ([int]$Matches[1] -eq 3 -and [int]$Matches[2] -ge 11)) { return $bin }
             }
         } catch {}
+    }
+    if (Test-Cmd "py") {
+        foreach ($version in @("-3.11", "-3.12", "-3.13", "-3.14")) {
+            try {
+                $candidate = & py $version -c "import sys; print(sys.executable)" 2>$null
+                if ($LASTEXITCODE -eq 0 -and $candidate -and (Test-Path -LiteralPath $candidate)) { return $candidate }
+            } catch {}
+        }
     }
     return $null
 }
@@ -63,13 +71,13 @@ $HasWinget = Test-Cmd "winget"
 $Python = Find-Python
 if (-not $Python) {
     if ($HasWinget) {
-        Write-Warn "未检测到 Python 3.9+，正在用 winget 自动安装（约 1-2 分钟）..."
+        Write-Warn "未检测到 Python 3.11+，正在用 winget 自动安装（约 1-2 分钟）..."
         winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements
         Refresh-Path
         $Python = Find-Python
     }
     if (-not $Python) {
-        Write-Fail "需要 Python 3.9+。请从 https://www.python.org/ 安装（勾选 Add to PATH），重开终端后重试。"
+        Write-Fail "需要 Python 3.11+。请从 https://www.python.org/ 安装（勾选 Add to PATH），重开终端后重试。"
     }
 }
 
@@ -116,6 +124,15 @@ if (-not (Test-Path $VenvPy)) {
     & $Python -m venv "$RepoRoot\src\server\.venv"
 }
 if (-not (Test-Path $VenvPy)) { Write-Fail "创建虚拟环境失败。" }
+& $VenvPy -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"
+if ($LASTEXITCODE -ne 0) { Write-Fail "The existing src/server/.venv requires Python 3.11+. Move it to a backup location, then re-run the installer. Preserve src/server/.env and data/." }
+
+$pipReady = $false
+try { & $VenvPy -m pip --version 2>$null | Out-Null; $pipReady = ($LASTEXITCODE -eq 0) } catch { $pipReady = $false }
+if (-not $pipReady) {
+    & $VenvPy -m ensurepip --upgrade
+    if ($LASTEXITCODE -ne 0) { Write-Fail "pip is unavailable in the existing virtual environment. Install the Python ensurepip component, then retry." }
+}
 
 $Wheelhouse = "$RepoRoot\src\server\vendor\wheels"
 $HasWheelhouse = (Test-Path $Wheelhouse) -and [bool](Get-ChildItem -Path $Wheelhouse -Filter "*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1)

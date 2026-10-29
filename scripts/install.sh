@@ -2,7 +2,7 @@
 # IvyeaOps one-shot install script for Linux
 #
 # What it does:
-#   1. Checks Python 3.9+ and Node 18+ are available
+#   1. Checks Python 3.11+ and Node 20+ are available
 #   2. Installs Python dependencies (pip)
 #   3. Builds the React frontend (npm)
 #   4. Generates src/server/.env with a random secret and an admin password hash
@@ -30,18 +30,18 @@ die()   { echo -e "${RED}[IvyeaOps] ERROR${RESET} $*" >&2; exit 1; }
 info "Checking prerequisites..."
 
 PYTHON=""
-for bin in python3 python; do
+for bin in python3 python python3.11 python3.12 python3.13 python3.14; do
   if command -v "$bin" &>/dev/null; then
     ver=$("$bin" -c "import sys; print(sys.version_info[:2])")
     major=$("$bin" -c "import sys; print(sys.version_info.major)")
     minor=$("$bin" -c "import sys; print(sys.version_info.minor)")
-    if [ "$major" -gt 3 ] || { [ "$major" -eq 3 ] && [ "$minor" -ge 9 ]; }; then
+    if [ "$major" -gt 3 ] || { [ "$major" -eq 3 ] && [ "$minor" -ge 11 ]; }; then
       PYTHON="$bin"
       break
     fi
   fi
 done
-[ -n "$PYTHON" ] || die "Python 3.9+ is required. Install it with your package manager and re-run."
+[ -n "$PYTHON" ] || die "Python 3.11+ is required. Install it with your package manager and re-run."
 
 # 预构建发行包已自带 src/client/dist —— 此时无需 Node/npm 与前端构建。
 PREBUILT=0
@@ -97,7 +97,8 @@ if [ -n "$_use_cn" ]; then
   [ "$GH_PROXY" = "none" ] && GH_PROXY=""
   if [ -n "$GH_PROXY" ] && command -v git &>/dev/null; then
     # Make bun's `bun install -g github:…` (git-based) go through the proxy too.
-    git config --global "url.${GH_PROXY}https://github.com/.insteadOf" "https://github.com/" 2>/dev/null || true
+    source "$REPO_ROOT/scripts/github-proxy.sh"
+    configure_github_proxy "$GH_PROXY"
     info "GitHub 走加速代理：${GH_PROXY}（设 IVYEA_GH_PROXY=none 可关闭）"
   fi
 fi
@@ -117,6 +118,13 @@ if [ ! -x "$VENV_DIR/bin/python" ]; then
   fi
 fi
 VENV_PY="$VENV_DIR/bin/python"
+if ! "$VENV_PY" -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"; then
+  die "The existing src/server/.venv requires Python 3.11+. Move it to a backup location, then re-run the installer. Preserve src/server/.env and data/."
+fi
+
+if ! "$VENV_PY" -m pip --version >/dev/null 2>&1; then
+  "$VENV_PY" -m ensurepip --upgrade || die "pip is unavailable in the existing virtual environment. Install the Python venv/ensurepip component, then retry."
+fi
 
 info "Installing Python dependencies..."
 # shellcheck disable=SC2086  # $PIP_MIRROR is intentionally word-split (URL, no spaces)

@@ -1,5 +1,6 @@
 """Regression for hosts whose MIME registry incorrectly maps JS to text/plain."""
 import os
+from pathlib import Path
 import subprocess
 import sys
 
@@ -30,5 +31,6 @@ with TestClient(app) as client:
     env = dict(os.environ, IVYEA_OPS_DATA_DIR=str(tmp_path / 'data'),
                HERMES_HOME=str(tmp_path / 'hermes'), IVYEA_OPS_SKIP_STARTUP_TASKS='1')
     result = subprocess.run([sys.executable, '-c', script, str(tmp_path)],
-                            env=env, capture_output=True, text=True, timeout=45)
+                            env=env, cwd=Path(__file__).resolve().parents[2],
+                            capture_output=True, text=True, timeout=45)
     assert result.returncode == 0, result.stdout + result.stderr
