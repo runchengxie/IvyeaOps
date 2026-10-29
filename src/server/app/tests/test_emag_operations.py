@@ -15,6 +15,20 @@ def evidence(tmp_path, monkeypatch):
     return save
 
 
+def test_projected_validation_reasons_survive_snapshot_and_board(tmp_path, monkeypatch):
+    from app.core.config import settings
+    from app.services.emag_readonly import project_offer
+    monkeypatch.setattr(settings, 'data_dir', tmp_path)
+    row = project_offer({'id': 1, 'validation_status': [{'value': 8, 'errors': {'errors': [
+        {'code': 'naming:comment', 'message': {'en_GB': 'Correct product type'}}]}}]})
+    snapshot = artifacts.import_snapshot({'store_id': 'demo-ro', 'platform': 'emag', 'marketplace': 'RO',
+        'captured_at': '2026-10-28T00:00:00Z', 'source': 'synthetic', 'coverage': ['offers'],
+        'limitations': ['test only'], 'data': {'offers': [row]}})
+    assert artifacts.read_snapshot('demo-ro', snapshot['snapshot_id'])['data']['offers'][0] == row
+    status = ops.board('demo-ro')['issues'][0]['platform_status'][0]
+    assert status['error_details'][0]['message'] == 'Correct product type'
+
+
 def test_workflow_is_version_bound_and_review_is_not_resolution(evidence):
     first=evidence()
     item=ops.board('demo-ro')['issues'][0]

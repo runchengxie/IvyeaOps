@@ -28,6 +28,8 @@ On Unix, use `.venv/bin/python` instead. `example-ro` is a placeholder, not an a
 
 `app.emag_cli --describe` describes collection without reading credentials or calling eMAG. `--prompt` accepts hidden interactive credentials on supported terminal platforms. The combined business/job collection path uses the saved Windows credential; offline `--from-latest` needs no credential.
 
+For supported structured validation errors, new collections retain up to eight compact `error_details` entries per status: `code`, `section`, the platform's `en_GB` message and optional `extra_info`. Text is limited to 256 characters per field; URLs and email addresses are replaced. `error_details_truncated` indicates omitted or shortened entries. The full submitted product document and error identifiers are not retained. Other sensitive content may remain in platform messages, so snapshots remain private. Older snapshots keep their original placeholder and are not retroactively enriched.
+
 Job exits: 0 means the report/receipt stage completed, 1 means a recorded stage failed, 2 means an invalid/unavailable job entry, storage problem or busy lock. Check the receipt rather than treating an old successful run as the current result. Forceful termination can leave no new receipt.
 
 For a manual local transition, supply `--snapshot-id`, `--issue-id`, `--state`, `--revision`, `--note`. Review additionally requires the explicitly inspected newer `--review-snapshot-id`. State order is `pending` → `proposed` → `approved` → `executed` → `reviewed`. There is no automatic approval or rejection/rework transition.

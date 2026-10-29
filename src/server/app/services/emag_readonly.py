@@ -1,6 +1,7 @@
 """Read-only RO offers and source-labelled evidence; no marketplace write API."""
 from datetime import datetime, timezone
 import math
+import re
 import time
 
 import httpx
@@ -58,6 +59,49 @@ def redact(value, secrets):
     return value
 
 
+def _validation_details(errors):
+    """Keep bounded platform messages, never the submitted document or URLs."""
+    entries = errors.get('errors') if isinstance(errors, dict) else None
+    if not isinstance(entries, list):
+        return None, False
+    details = []
+    truncated = len(entries) > 64
+    seen = set()
+    for entry in entries[:64]:
+        if not isinstance(entry, dict):
+            truncated = True
+            continue
+        detail = {}
+        for key in ('code', 'section'):
+            value = entry.get(key)
+            if isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,100}', value):
+                detail[key] = value
+        messages = entry.get('message')
+        for key, value in (('message', messages.get('en_GB') if isinstance(messages, dict) else None),
+                           ('extra_info', entry.get('extra_info'))):
+            if not isinstance(value, str):
+                continue
+            value = re.sub(r'https?://\S+', '[URL omitted]', value, flags=re.IGNORECASE)
+            value = re.sub(r'\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b', '[email omitted]', value)
+            value = ' '.join(value.split())
+            if len(value) > 256:
+                truncated = True
+                value = value[:256]
+            if value:
+                detail[key] = value
+        if detail:
+            identity = tuple(sorted(detail.items()))
+            if identity in seen:
+                truncated = True
+                continue
+            if len(details) == 8:
+                truncated = True
+                break
+            seen.add(identity)
+            details.append(detail)
+    return details, truncated
+
+
 def project_offer(row):
     fields = ('id', 'part_number', 'part_number_key', 'name', 'status', 'sale_price',
               'currency', 'vat_id', 'general_stock', 'estimated_stock', 'fulfillment_type',
@@ -81,6 +125,11 @@ def project_offer(row):
                 item['errors'] = errors[:2000]
             elif errors:
                 item['errors'] = 'Structured validation details omitted; inspect seller portal.'
+                details, truncated = _validation_details(errors)
+                if details is not None:
+                    item['error_details'] = details
+                    if truncated:
+                        item['error_details_truncated'] = True
             compact.append(item)
         result[key] = compact if isinstance(original, list) else (compact[0] if compact else {})
     return result

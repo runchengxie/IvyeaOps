@@ -93,13 +93,14 @@ def summarize(data):
                          'reserved_stock':None,'in_transit_stock':None}}
 
 
-def collect(client,auth,days=29):
+def collect(client,auth,days=29,*,secrets=()):
     if type(days) is not int or not 1<=days<=29:raise ValueError('Window must be 1–29 days')
     end=datetime.now(timezone.utc);start=end-timedelta(days=days)
     window={'start':start.strftime('%Y-%m-%d %H:%M:%S'),'end':end.strftime('%Y-%m-%d %H:%M:%S'),
             'timezone_note':'UTC values sent as naive API filter strings; platform timezone unverified'}
     offers=emag_readonly.collect(client,auth)
     if not offers['complete']:raise ValueError('Offer collection incomplete')
+    offers=emag_readonly.redact(offers,secrets)
     # Add only inventory/price evidence absent from the basic projection.
     data={'offers':[{**emag_readonly.project_offer(r),**{k:r[k] for k in ('stock_2p_aging_bands','main_offer_price','min_sale_price','max_sale_price') if k in r}} for r in offers['offers']]}
     for resource in RESOURCES:

@@ -42,6 +42,16 @@ def test_delta_does_not_treat_missing_as_zero():
     assert changes[0]['before'] is None
 
 
+def test_new_validation_detail_does_not_make_legacy_snapshot_look_changed():
+    old = [{'id': 1, 'validation_status': [{'value': 8, 'errors': 'Structured validation details omitted; inspect seller portal.'}]}]
+    new = [{'id': 1, 'validation_status': [{**old[0]['validation_status'][0],
+        'error_details': [{'code': 'naming:comment', 'message': 'Fix name'}]}]}]
+    assert jobs.compare(old, new) == []
+    later = [{'id': 1, 'validation_status': [{**new[0]['validation_status'][0],
+        'error_details': [{'code': 'naming:comment', 'message': 'Fix type'}]}]}]
+    assert jobs.compare(new, later)[0]['field'] == 'validation_status'
+
+
 def test_failed_collection_preserves_source_and_records_failure(sample):
     source=sample()
     def fail():raise ValueError('do not log private details')

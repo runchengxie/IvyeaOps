@@ -3,6 +3,16 @@ import pytest
 from app.services import emag_business as business
 
 
+def test_credentials_are_redacted_before_validation_message_is_shortened(monkeypatch):
+    row = {'id': 1, 'validation_status': [{'value': 8, 'errors': {'errors': [
+        {'message': {'en_GB': 'x' * 252 + 'secretlong'}}]}}]}
+    monkeypatch.setattr(business.emag_readonly, 'collect', lambda *args: {'complete': True, 'offers': [row]})
+    monkeypatch.setattr(business, 'read_resource', lambda *args, **kwargs: [])
+    result = business.collect(None, None, secrets=('secretlong',))
+    message = result['data']['offers'][0]['validation_status'][0]['error_details'][0]['message']
+    assert 'secr' not in message
+
+
 def test_read_only_filters_nested_invoice_and_projection():
     requests=[]
     def handler(request):
