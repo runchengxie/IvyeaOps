@@ -41,7 +41,7 @@ The repository currently has no configured coverage threshold, dedicated securit
 - The quality page displays the backend `stock_unknown` summary, including missing, malformed and negative stock values.
 - Agent locale resources do not localize the entire workbench. `en-US` is not the saved language ID exposed by the language list.
 - IvyeaAgent is an external installed dependency. This audit checks the repository's adapters and installed runtime version, not every upstream release or provider behavior.
-- Docker images, binary packages and systemd changes require their own environment validation before deployment.
+- Binary packages and systemd changes require their own environment validation before deployment.
 
 See [maintenance-audit.md](maintenance-audit.md) for the inspected commit/worktree context, findings, checks that ran and checks not executed.
 

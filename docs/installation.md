@@ -48,4 +48,4 @@ npm run build
 
 From `src/server`, create/activate the platform's venv, install `requirements.txt`, `requirements-test.txt` and `requirements-mcp-test.txt`, then run `python -m pytest`. Build the frontend before using the production FastAPI UI. Vite development uses port 5174, backend port 8001, and the isolated component harness uses 5199.
 
-Docker source inputs also use `src/`. Docker builds, systemd changes and binary release assembly were not executed by the local documentation audit unless explicitly listed in its evidence table.
+The repository no longer supplies Docker deployment files or a Docker setup command. Existing container deployments need their own maintained configuration. Systemd changes and binary release assembly were not executed by the local documentation audit unless explicitly listed in its evidence table.

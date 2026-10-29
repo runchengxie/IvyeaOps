@@ -24,3 +24,23 @@ def test_dev_when_nothing_available(monkeypatch, tmp_path):
     monkeypatch.setattr(v, "runtime_root", lambda: tmp_path)
     monkeypatch.setattr(v, "_git_tag", lambda root: "")
     assert v.app_version() == "dev"
+
+
+def test_source_version_uses_docs_version_when_git_tag_unavailable(monkeypatch, tmp_path):
+    v._CACHED = None
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "version").write_text("v2.3.4", encoding="utf-8")
+    monkeypatch.setattr(v, "runtime_root", lambda: tmp_path)
+    monkeypatch.setattr(v, "_git_tag", lambda root: "")
+    monkeypatch.setattr(v.sys, "frozen", False, raising=False)
+    assert v.app_version() == "v2.3.4"
+
+
+def test_frozen_bundle_prefers_its_root_version(monkeypatch, tmp_path):
+    v._CACHED = None
+    (tmp_path / "VERSION").write_text("v3.0.0", encoding="utf-8")
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "version").write_text("v2.0.0", encoding="utf-8")
+    monkeypatch.setattr(v, "runtime_root", lambda: tmp_path)
+    monkeypatch.setattr(v.sys, "frozen", True, raising=False)
+    assert v.app_version() == "v3.0.0"

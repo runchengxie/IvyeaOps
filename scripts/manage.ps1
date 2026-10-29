@@ -1,6 +1,6 @@
 # Unified Windows entry point. -DryRun resolves commands without side effects.
 param(
-    [ValidateSet('install','start','stop','update','setup-docker')][string]$Action='start',
+    [ValidateSet('install','start','stop','update')][string]$Action='start',
     [ValidateSet('auto','source','bundle')][string]$Target='auto',
     [switch]$Foreground,[switch]$Lan,[switch]$Gui,[switch]$DryRun
 )
@@ -17,7 +17,6 @@ switch($Action){
     }
     'stop' {$entry='stop-hidden.ps1'}
     'update' {if($Target -ne 'bundle'){throw 'This Windows update entry supports bundled builds only. Source checkouts use the in-app updater or a reviewed git update.'};$entry='update-exe.ps1'}
-    'setup-docker' {$entry='setup-docker.ps1'}
 }
 if($Gui -and $Action -in @('stop','update')){$entry='windows-action-gui.ps1';$entryArgs=@('-Mode',$Action)}
 $script=Join-Path $PSScriptRoot $entry

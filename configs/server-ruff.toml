@@ -38,17 +38,17 @@ ignore = [
 
 [lint.per-file-ignores]
 # 这几个是给人在终端里跑的 CLI 工具，print 就是它们的正确输出方式。
-"app/core/hashpw.py" = ["T201"]
-"app/core/secrets.py" = ["T201"]        # __main__ 里的 --decrypt-all 降级逃生舱
-"app/services/freight_parser.py" = ["T201"]
-"app/evals/make_case.py" = ["T201"]        # 攒评测案例的终端工具
-"app/evals/build_ads_cases.py" = ["T201"]  # 同上
-"app/evals/cli.py" = ["T201"]              # 评测报告就是打给人看的
-"app/emag_cli.py" = ["T201"]              # 只读采集 CLI 的终端输出
-"app/emag_business_cli.py" = ["T201"]
-"app/emag_job_cli.py" = ["T201"]
-"app/emag_workflow_cli.py" = ["T201"]
-"app/store_cli.py" = ["T201"]
+"../src/server/app/core/hashpw.py" = ["T201"]
+"../src/server/app/core/secrets.py" = ["T201"]        # __main__ 里的 --decrypt-all 降级逃生舱
+"../src/server/app/services/freight_parser.py" = ["T201"]
+"../src/server/app/evals/make_case.py" = ["T201"]        # 攒评测案例的终端工具
+"../src/server/app/evals/build_ads_cases.py" = ["T201"]  # 同上
+"../src/server/app/evals/cli.py" = ["T201"]              # 评测报告就是打给人看的
+"../src/server/app/emag_cli.py" = ["T201"]              # 只读采集 CLI 的终端输出
+"../src/server/app/emag_business_cli.py" = ["T201"]
+"../src/server/app/emag_job_cli.py" = ["T201"]
+"../src/server/app/emag_workflow_cli.py" = ["T201"]
+"../src/server/app/store_cli.py" = ["T201"]
 # 测试里偶尔 print 调试是可接受的。
-"tests/*" = ["T201"]
-"app/tests/*" = ["T201"]
+"../src/server/tests/*" = ["T201"]
+"../src/server/app/tests/*" = ["T201"]

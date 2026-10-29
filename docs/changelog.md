@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+- Retired the repository Docker deployment files and setup commands. Existing container deployments need their own maintained configuration.
+
+- Moved source license, version and Ruff rules into `docs` and `configs`; existing frozen bundles keep their version file layout. Removed the repository Claude instruction pointer.
+
 - Resolve the remaining KaTeX advisories with a shared version override and run the dependency audit in CI.
 
 - Align the eMAG quality page stock-unknown count with the backend summary.

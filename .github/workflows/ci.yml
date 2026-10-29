@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # 配置在 src/server/ruff.toml。选的规则是"当前全仓零违规"的那批 ——
+      # 配置在 configs/server-ruff.toml。选的规则是"当前全仓零违规"的那批 ——
       # 一旦变红，必然是这次改动引入的，不会有"历史债太多所以忽略它"的余地。
       - uses: astral-sh/ruff-action@v3
         with:

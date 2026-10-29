@@ -39,4 +39,4 @@ npm run build
 
 进入 `src/server` 创建并激活本平台 venv，安装 `requirements.txt`、`requirements-test.txt`、`requirements-mcp-test.txt`，执行 `python -m pytest`。FastAPI 生产页面需要已构建前端。Vite development 为 5174，后端为 8001，隔离组件 harness 为 5199。
 
-Docker 源输入也使用 `src/`。除审计证据明确列出外，本地审计没有执行 Docker 构建、systemd 修改或二进制发行包组装。
+仓库不再提供 Docker 部署文件或 Docker 安装命令。已有容器部署需要自行维护配置。除审计证据明确列出外，本地审计没有执行 systemd 修改或二进制发行包组装。

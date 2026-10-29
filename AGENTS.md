@@ -1,6 +1,6 @@
 # Repository working agreement
 
-This is the canonical instruction file for coding agents. `CLAUDE.md` points here. User and session instructions, including existing publishing authorization, take precedence.
+This is the canonical instruction file for coding agents. User and session instructions, including existing publishing authorization, take precedence.
 
 ## Project and layout
 
