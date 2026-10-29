@@ -47,6 +47,92 @@ def collect(client, auth, *, page_size=100, delay=1, max_pages=100):
     return result
 
 
+
+def lookup_sku(client, auth, sku):
+    """Read one SKU without creating a store snapshot or assuming availability."""
+    if not isinstance(sku, str) or not sku.strip() or len(sku) > 256 or any(ord(c) < 32 or ord(c) == 127 for c in sku):
+        raise ValueError('Invalid SKU')
+    def incomplete(reason):
+        return {'status': 'incomplete', 'reason': reason, 'offer': None}
+    try:
+        response = client.post(ENDPOINT, json={'part_number': sku, 'currentPage': 1, 'itemsPerPage': 100},
+                               auth=auth, follow_redirects=False)
+        if not response.is_success:
+            return incomplete(f'http_{response.status_code}')
+        body = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        return incomplete(type(exc).__name__)
+    if not isinstance(body, dict) or body.get('isError') is not False or not isinstance(body.get('results'), list):
+        return incomplete('api_or_shape_error')
+    rows = body['results']
+    if not rows:
+        return {'status': 'not_found', 'reason': 'no_results', 'offer': None}
+    if (len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get('part_number') != sku
+            or type(rows[0].get('id')) not in (int, str) or not str(rows[0]['id']).strip()):
+        return incomplete('ambiguous_or_mismatched_results')
+    row = dict(rows[0])
+    status_keys = ('validation_status', 'translation_validation_status', 'offer_validation_status')
+    truncated = any(isinstance(row.get(k), list) and len(row[k]) > 8 for k in status_keys)
+    for key in status_keys:
+        if isinstance(row.get(key), list):
+            row[key] = row[key][:8]
+    offer, more_truncated = _bounded_sku_offer(project_offer(row))
+    return {'status': 'found', 'reason': 'exact_match', 'offer': offer,
+            'evidence_truncated': truncated or more_truncated}
+
+
+
+def _bounded_sku_offer(offer):
+    """Omit malformed nested fields and limit data returned by a single lookup."""
+    truncated = False
+    def scalar(value):
+        nonlocal truncated
+        if isinstance(value, str):
+            if len(value) > 256:
+                truncated = True
+            value = re.sub(r'https?://\S+', '[URL omitted]', value, flags=re.IGNORECASE)
+            value = re.sub(r'\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b', '[email omitted]', value)
+            return value[:256]
+        if value is None or type(value) in (int, bool):
+            return value
+        if type(value) is float and math.isfinite(value):
+            return value
+        return None
+    def fields(item, keys):
+        return {k: scalar(item[k]) for k in keys if k in item and
+                (item[k] is None or scalar(item[k]) is not None)}
+    status_keys = ('validation_status', 'translation_validation_status', 'offer_validation_status')
+    result = fields(offer, [k for k in offer if k not in status_keys])
+    for key in status_keys:
+        if key not in offer:
+            continue
+        original = offer[key]
+        statuses = original if isinstance(original, list) else [original]
+        clean = []
+        for status in statuses[:8]:
+            if not isinstance(status, dict):
+                continue
+            item = fields(status, ('value', 'description', 'errors', 'error_details_truncated'))
+            details = status.get('error_details')
+            if status.get('error_details_truncated') is True:
+                truncated = True
+            if isinstance(details, list):
+                item['error_details'] = [fields(d, ('code', 'section', 'message', 'extra_info'))
+                                         for d in details[:8] if isinstance(d, dict)]
+            clean.append(item)
+        result[key] = clean if isinstance(original, list) else (clean[0] if clean else {})
+    return result, truncated
+
+
+def redact_values(value, secrets):
+    """Redact string values while preserving stable machine field names."""
+    if isinstance(value, dict):
+        return {key: redact_values(item, secrets) for key, item in value.items()}
+    if isinstance(value, list):
+        return [redact_values(item, secrets) for item in value]
+    return redact(value, secrets)
+
+
 def redact(value, secrets):
     if isinstance(value, str):
         for secret in sorted((s for s in secrets if s), key=len, reverse=True):
