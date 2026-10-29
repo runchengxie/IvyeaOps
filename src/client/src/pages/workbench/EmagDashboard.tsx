@@ -41,9 +41,9 @@ export default function EmagDashboard({ data }: { data: DashboardData }) {
         <div className="ed-source">以上为已观察到的异常数量；价格状态未知 {metrics.priceUnknown ?? '未核实'} 条 · 资料状态未知 {metrics.documentationUnknown ?? '未核实'} 条 · 库存未知 {metrics.stockUnknown ?? '未核实'} 条。成本、利润和广告数据尚未接入；快照不是平台实时状态。</div>
       </section>
     </> : <section className="ed-panel" aria-label="异常商品"><div className="ed-panel-head"><div><h2>异常商品</h2><p>按当前快照的异常原因列出，处理进度请进入巡检查看</p></div><Link to={`/emag?store=${encodeURIComponent(data.store_id)}`}>进入巡检 →</Link></div>
-      {data.issues.length ? <div className="ed-table-wrap"><table className="ed-table"><thead><tr><th>商品 / SKU</th><th>异常</th><th>库存字段</th></tr></thead><tbody>{data.issues.slice(0, 50).map(issue => {
+      {data.issues.length ? <div className="ed-table-wrap"><table className="ed-table"><thead><tr><th>商品 / SKU</th><th>异常</th><th>库存字段</th><th>操作</th></tr></thead><tbody>{data.issues.slice(0, 50).map(issue => {
         const offer = data.offers.find(item => String(item.id) === String(issue.id));
-        return <tr key={issue.issue_id}><td>{offer?.name || issue.id}<small>{offer?.part_number || 'SKU 未采集'}</small></td><td><span className="ed-issue">{labels[issue.reason] || issue.reason}</span></td><td>{issue.general_stock ?? '未知'}</td></tr>;
+        return <tr key={issue.issue_id}><td>{offer?.name || issue.id}<small>{offer?.part_number || 'SKU 未采集'}</small></td><td><span className="ed-issue">{labels[issue.reason] || issue.reason}</span></td><td>{issue.general_stock ?? '未知'}</td><td><Link to={`/emag?store=${encodeURIComponent(data.store_id)}&issue=${encodeURIComponent(issue.issue_id)}`} aria-label={`查看 ${offer?.part_number || issue.id} 异常`}>查看详情 →</Link></td></tr>;
       })}</tbody></table>{data.issues.length > 50 && <p>仅显示前 50 项，请进入巡检查看完整清单。</p>}</div> : <p>当前快照未观察到已跟踪的异常。</p>}
       <div className="ed-source">未观察到异常不代表所有经营风险已排除。价格状态未知 {metrics.priceUnknown ?? '未核实'} 条 · 资料状态未知 {metrics.documentationUnknown ?? '未核实'} 条 · 库存未知 {metrics.stockUnknown ?? '未核实'} 条。</div>
     </section>}

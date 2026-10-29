@@ -18,6 +18,8 @@ The eMAG dashboard offers management and specialist views of the current snapsho
 
 The page labelled Approvals separates local eMAG records from general Agent permission requests. Accepting an Agent request may resume a command or file write. An eMAG local approval does not perform that action.
 
+The inspection page filters observed issues by product, reason, stock and local workflow state. Specialist links open the matching issue in the specified store’s current snapshot; an unavailable store or issue is reported instead of silently selecting another. Details show captured price, stock and available platform messages alongside local history. See [eMAG write API readiness](emag-write-readiness.md) for prerequisites for future marketplace writes.
+
 ## CLI
 
 From `src/server`, using the installed venv:
