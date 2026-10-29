@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import html
 import posixpath
+import shutil
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
@@ -75,13 +76,22 @@ def relative_link(current, destination):
     return posixpath.relpath(destination.as_posix(), current.parent.as_posix())
 
 
-def build(output):
+def build(output, demo_dir=None):
     output = Path(output).resolve()
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         raise ValueError(f'Output must be an empty directory: {output}')
     published = {(ROOT / source).resolve(): Path(lang, f'{name}.html').as_posix()
                  for lang, pages in PAGES.items() for name, source in pages.items()}
     output.mkdir(parents=True, exist_ok=True)
+    if demo_dir is not None:
+        if Path(demo_dir).is_symlink():
+            raise ValueError('Demo must not be a symbolic link')
+        demo = Path(demo_dir).resolve()
+        if not (demo / 'index.html').is_file() or any(path.is_symlink() for path in demo.rglob('*')):
+            raise ValueError('Demo must be a built directory without symbolic links')
+        if demo == output or output in demo.parents or demo in output.parents:
+            raise ValueError('Demo source must be outside the output directory')
+        shutil.copytree(demo, output / 'demo')
     (output / 'assets').mkdir(exist_ok=True)
     (output / 'assets/site.css').write_text((ROOT / 'docs/site/site.css').read_text('utf-8'), encoding='utf-8')
     (output / 'assets/emag-workbench.png').write_bytes((ROOT / 'docs/site/emag-workbench.png').read_bytes())
@@ -95,7 +105,9 @@ def build(output):
             if name == 'index':
                 alt = '使用模拟店铺数据的 eMAG 巡检工作台' if lang == 'zh-CN' else 'eMAG inspection workbench using synthetic store data'
                 caption = '工作台截图使用模拟数据，界面目前主要为中文。' if lang == 'zh-CN' else 'Workbench preview with synthetic data. The interface is currently mostly Chinese.'
-                preview = f'<figure class="workbench-preview"><img src="../assets/emag-workbench.png" alt="{alt}"><figcaption>{caption}</figcaption></figure>'
+                demo_label = '打开交互演示' if lang == 'zh-CN' else 'Open interactive demo'
+                link = f'<p><a class="demo-cta" href="../demo/index.html">{demo_label} →</a></p>' if demo_dir is not None else ''
+                preview = f'{link}<figure class="workbench-preview"><img src="../assets/emag-workbench.png" alt="{alt}"><figcaption>{caption}</figcaption></figure>'
                 content = content.replace('</h1>', '</h1>' + preview, 1)
             labels = LABELS[lang]
             nav = ''.join(f'<a href="{relative_link(dest, Path(lang, f"{item}.html"))}"{(" aria-current=page" if item == name else "")}>{html.escape(labels[item])}</a>' for item in pages)
@@ -123,4 +135,6 @@ def build(output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, help='Output directory for generated static files')
-    build(parser.parse_args().output)
+    parser.add_argument('--demo-dir', help='Explicitly include a built, public demo directory')
+    args = parser.parse_args()
+    build(args.output, args.demo_dir)

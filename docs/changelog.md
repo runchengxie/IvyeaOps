@@ -8,6 +8,7 @@
 
 ## [Unreleased]
 
+- Add an interactive, isolated eMAG workbench demo to the documentation site and show issue-specific review guidance in the inspection page.
 - Expand manual eMAG audit reports with bounded issue details, source-compatible observation history and baseline comparisons.
 - Preserve bounded, redacted eMAG validation reasons in new snapshots and avoid reporting their introduction as a platform status change.
 - Link to the project site and show the workbench with synthetic data on its overview pages.
