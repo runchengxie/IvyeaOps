@@ -8,6 +8,7 @@
 
 ## [Unreleased]
 
+- Link to the project site and show the workbench with synthetic data on its overview pages.
 - Require Python 3.11+ and update FastAPI, Starlette and Pillow to address dependency advisories. Back up an older virtual environment before reinstalling; preserve configuration and data.
 - Count large integer stock without floating-point overflow, include SOCKS proxy support in runtime dependencies, and scope installer Git proxy settings to its process.
 - Move the server configuration example to `configs/server.env.example` and remove the retired Docker example.

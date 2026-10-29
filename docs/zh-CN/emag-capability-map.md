@@ -4,6 +4,8 @@
 
 这里描述当前 fork 的实现，不代表 eMAG Marketplace API 的全部能力。现有采集面向 eMAG RO，并生成本地证据；仍需要平台权限和允许的出口 IP。
 
+[eMAG API 介绍](https://marketplace.emag.ro/infocenter/emag-academy/how-to-add-a-product/product-import-through-api-or-feeds/?lang=en)说明平台支持商品和报价刊登、库存与价格更新以及订单处理。平台支持这些能力，不代表本 fork 已实现它们，也不代表特定卖家账号已经获得相应权限。
+
 | 领域 | 当前可用 | 边界 |
 |---|---|---|
 | 商品 | 读取部分字段，检查分页完整的快照 | 不提交商品或 offer |

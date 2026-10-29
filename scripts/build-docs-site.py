@@ -84,6 +84,7 @@ def build(output):
     output.mkdir(parents=True, exist_ok=True)
     (output / 'assets').mkdir(exist_ok=True)
     (output / 'assets/site.css').write_text((ROOT / 'docs/site/site.css').read_text('utf-8'), encoding='utf-8')
+    (output / 'assets/emag-workbench.png').write_bytes((ROOT / 'docs/site/emag-workbench.png').read_bytes())
     (output / 'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=en/index.html"><title>IvyeaOps</title><a href="en/index.html">Open documentation</a></html>', encoding='utf-8')
     for lang, pages in PAGES.items():
         for name, filename in pages.items():
@@ -91,6 +92,11 @@ def build(output):
             dest = Path(lang, f'{name}.html')
             renderer = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', LinkExtension(source, dest, published)])
             content = renderer.convert(source.read_text('utf-8'))
+            if name == 'index':
+                alt = '使用模拟店铺数据的 eMAG 巡检工作台' if lang == 'zh-CN' else 'eMAG inspection workbench using synthetic store data'
+                caption = '工作台截图使用模拟数据，界面目前主要为中文。' if lang == 'zh-CN' else 'Workbench preview with synthetic data. The interface is currently mostly Chinese.'
+                preview = f'<figure class="workbench-preview"><img src="../assets/emag-workbench.png" alt="{alt}"><figcaption>{caption}</figcaption></figure>'
+                content = content.replace('</h1>', '</h1>' + preview, 1)
             labels = LABELS[lang]
             nav = ''.join(f'<a href="{relative_link(dest, Path(lang, f"{item}.html"))}"{(" aria-current=page" if item == name else "")}>{html.escape(labels[item])}</a>' for item in pages)
             other = 'zh-CN' if lang == 'en' else 'en'

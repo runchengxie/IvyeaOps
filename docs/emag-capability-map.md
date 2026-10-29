@@ -4,6 +4,8 @@
 
 This map describes the current fork, not the complete eMAG Marketplace API. The implemented collection targets eMAG RO and produces local evidence. Platform permissions and an allowed source IP are still required.
 
+The [eMAG API overview](https://marketplace.emag.ro/infocenter/emag-academy/how-to-add-a-product/product-import-through-api-or-feeds/?lang=en) describes product and offer listing, stock and price updates, and order processing. Platform support does not mean this fork implements them or that a particular seller account has permission to use them.
+
 | Area | Available now | Boundary |
 |---|---|---|
 | Offers | Read selected fields and inspect pagination-complete snapshots | No marketplace listing or offer submission |

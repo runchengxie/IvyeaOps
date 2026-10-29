@@ -26,6 +26,9 @@ def test_site_build_has_localized_pages_and_resolves_local_links(tmp_path):
     assert (destination / 'index.html').is_file()
     assert 'eMAG' in (destination / 'en/index.html').read_text('utf-8')
     assert 'eMAG' in (destination / 'zh-CN/index.html').read_text('utf-8')
+    assert (destination / 'assets/emag-workbench.png').is_file()
+    assert 'synthetic' in (destination / 'en/index.html').read_text('utf-8').lower()
+    assert '模拟' in (destination / 'zh-CN/index.html').read_text('utf-8')
     assert not (destination / 'data').exists()
     for page in destination.rglob('*.html'):
         parser = Links()
