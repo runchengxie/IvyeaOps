@@ -4,6 +4,8 @@
 
 ## Daily workflow
 
+The project site includes an interactive eMAG demo built from the workbench components. It uses fictional data and an in-memory mock; refresh resets its changes. The demo cannot connect to a backend and does not provide real marketplace operations. Its interface is currently mostly Chinese. The source installation remains separate.
+
 1. Collect or explicitly import an eMAG RO snapshot.
 2. Inspect source time, coverage and limitations before using the business pages.
 3. Investigate issues and record a proposal locally.

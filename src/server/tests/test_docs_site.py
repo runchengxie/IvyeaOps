@@ -51,3 +51,26 @@ def test_site_build_preserves_existing_output(tmp_path):
                             capture_output=True, encoding='utf-8', timeout=45)
     assert result.returncode != 0
     assert marker.read_text(encoding='utf-8') == 'keep'
+
+
+def test_site_links_an_explicit_demo_bundle(tmp_path):
+    demo = tmp_path / 'built-demo'
+    demo.mkdir()
+    (demo / 'index.html').write_text('<!doctype html><title>Synthetic demo</title>', encoding='utf-8')
+    destination = tmp_path / 'site'
+    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-docs-site.py'), '--output', str(destination),
+                             '--demo-dir', str(demo)], capture_output=True, encoding='utf-8', timeout=45)
+    assert result.returncode == 0, result.stderr
+    assert (destination / 'demo/index.html').is_file()
+    assert '../demo/index.html' in (destination / 'en/index.html').read_text('utf-8')
+    assert '../demo/index.html' in (destination / 'zh-CN/index.html').read_text('utf-8')
+
+
+def test_demo_source_cannot_contain_output_directory(tmp_path):
+    demo = tmp_path / 'built-demo'
+    demo.mkdir()
+    (demo / 'index.html').write_text('synthetic', encoding='utf-8')
+    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-docs-site.py'), '--output', str(demo / 'site'),
+                             '--demo-dir', str(demo)], capture_output=True, encoding='utf-8', timeout=45)
+    assert result.returncode != 0
+    assert (demo / 'index.html').read_text('utf-8') == 'synthetic'

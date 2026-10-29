@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { createDemoState } from './state.mjs';
+
+test('demo document denies network connections and form submission', () => {
+  const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+  assert.match(html, /connect-src 'none'/);
+  assert.match(html, /form-action 'none'/);
+  assert.match(html, /object-src 'none'/);
+});
+
+test('demo exposes only synthetic stores and resets after reload', () => {
+  const demo = createDemoState();
+  assert.equal(demo.request('GET', '/emag/stores')[0].store_id, 'demo-ro');
+  const board = demo.request('GET', '/emag/stores/demo-ro');
+  assert.ok(board.issues.length >= 2);
+  assert.equal(board.source, 'synthetic-demo');
+  demo.request('POST', '/emag/stores/demo-ro/issues/demo-price', {
+    snapshot_id: 'demo-v1', state: 'proposed', revision: 0, note: 'Check costs',
+  });
+  assert.equal(demo.request('GET', '/emag/stores/demo-ro').issues[0].state, 'proposed');
+  assert.equal(createDemoState().request('GET', '/emag/stores/demo-ro').issues[0].state, 'pending');
+});
+
+test('drafts are memory-only and unsupported calls fail closed', () => {
+  const demo = createDemoState();
+  demo.request('POST', '/emag/stores/demo-ro/drafts', {
+    snapshot_id: 'demo-v1', kind: 'listing', product_id: '101', title: 'Demo title', body: 'Demo body',
+  });
+  assert.equal(demo.request('GET', '/emag/stores/demo-ro/workspace').drafts.length, 1);
+  assert.equal(createDemoState().request('GET', '/emag/stores/demo-ro/workspace').drafts.length, 0);
+  assert.throws(() => demo.request('POST', '/emag/stores/demo-ro/products/publish', {}));
+  assert.throws(() => demo.request('GET', 'https://example.invalid/real-store'));
+});
+
+test('demo rejects stale state and empty notes', () => {
+  const demo = createDemoState();
+  assert.throws(() => demo.request('POST', '/emag/stores/demo-ro/issues/demo-price', {
+    snapshot_id: 'demo-v1', state: 'proposed', revision: 9, note: 'wrong revision',
+  }));
+  assert.throws(() => demo.request('POST', '/emag/stores/demo-ro/issues/demo-price', {
+    snapshot_id: 'demo-v1', state: 'proposed', revision: 0, note: ' ',
+  }));
+});
+
+test('demo cannot review against the same snapshot', () => {
+  const demo = createDemoState();
+  for (const [revision, state] of ['proposed', 'approved', 'executed'].entries()) {
+    demo.request('POST', '/emag/stores/demo-ro/issues/demo-price', {
+      snapshot_id: 'demo-v1', state, revision, note: 'demo',
+    });
+  }
+  assert.throws(() => demo.request('POST', '/emag/stores/demo-ro/issues/demo-price', {
+    snapshot_id: 'demo-v1', review_snapshot_id: 'demo-v1', state: 'reviewed', revision: 3, note: 'demo',
+  }), /新快照/);
+  assert.equal(demo.request('GET', '/emag/stores/demo-ro').issues[0].state, 'executed');
+});
