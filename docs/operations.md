@@ -30,7 +30,7 @@ python -m pytest app/tests -q --timeout=180 --timeout-method=thread
 ruff check .
 ```
 
-CI separates the backend suites and platform matrix. Install test and MCP-test requirements to avoid dependency-based skips. The local evidence table records actual results, not inferred CI success. The real-component harness uses Vite on 127.0.0.1:5199; it replaces API responses with synthetic fixtures while rendering the production App tree. Never use synthetic fixtures as store evidence.
+CI separates the backend suites and platform matrix. The server test matrix covers Linux and Windows; macOS CI is temporarily disabled. Install test and MCP-test requirements to avoid dependency-based skips. The local evidence table records actual results, not inferred CI success. The real-component harness uses Vite on 127.0.0.1:5199; it replaces API responses with synthetic fixtures while rendering the production App tree. Never use synthetic fixtures as store evidence.
 
 The repository currently has no configured coverage threshold, dedicated security-scanner gate or dependency-audit CI gate. Do not describe these as passing. `uv pip check` checks installed dependency compatibility, not vulnerability status. `npm audit` needs a registry that supports the audit endpoint; a mirror may return an implementation error.
 

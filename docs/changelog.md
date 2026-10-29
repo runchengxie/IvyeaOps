@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+- Temporarily remove macOS from the CI server test matrix; Linux and Windows remain covered.
+
+- Rename the project presentation to ivyeaops and update links for the `ivyeaops` repository; existing configuration and credential identifiers remain unchanged.
+
 - Add management and specialist views to the eMAG dashboard, with source-labelled metrics and explicit unavailable data.
 - Add an interactive, isolated eMAG workbench demo to the documentation site and show issue-specific review guidance in the inspection page.
 - Expand manual eMAG audit reports with bounded issue details, source-compatible observation history and baseline comparisons.
