@@ -25,6 +25,8 @@
 | `IVYEA_OPS_COOKIE_DOMAIN` | 空，host-only cookie |
 | `IVYEA_OPS_DATA_DIR` | `<runtime-root>/data` |
 
+在本机环境文件中设置 `IVYEA_OPS_DATA_DIR=~/data/ivyeaops/runtime`，可将运行数据放到仓库外。`~` 会展开为当前用户的主目录。复制现有数据前请停止服务并备份；修改配置本身不会迁移文件。CLI 和服务进程必须使用相同的值，进程环境变量优先于环境文件。其他工具和本地脚本可能使用独立路径。
+
 本机浏览器应配置实际 origin，例如 `http://127.0.0.1:8001`，反向代理使用相应 HTTPS origin。development 模式改变安全行为，不能作为生产捷径。
 
 ## eMAG 凭据与运行模式

@@ -141,7 +141,7 @@ class Settings:
     ]
 
     # --- Data ---
-    data_dir: Path = Path(os.getenv("IVYEA_OPS_DATA_DIR", str(_ROOT / "data")))
+    data_dir: Path = Path(os.getenv("IVYEA_OPS_DATA_DIR", str(_ROOT / "data"))).expanduser()
 
 
 settings = Settings()

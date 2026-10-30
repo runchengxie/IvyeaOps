@@ -25,6 +25,8 @@ Runtime-editable settings are stored in `hub_settings.json` under the configured
 | `IVYEA_OPS_COOKIE_DOMAIN` | Empty, host-only cookie |
 | `IVYEA_OPS_DATA_DIR` | `<runtime-root>/data` |
 
+Set `IVYEA_OPS_DATA_DIR=~/data/ivyeaops/runtime` in the local environment file to keep runtime data outside the checkout. `~` expands to the current user's home. Stop the service and back up existing data before copying it to a new location; changing this setting does not migrate files. CLI and server processes must use the same value. Process environment variables override the environment file. Other tools and local scripts may use separate paths.
+
 For localhost browser use, configure the actual origin, such as `http://127.0.0.1:8001`. A reverse proxy needs its own HTTPS origin. Development mode changes security behavior and is not a production shortcut.
 
 ## eMAG credentials and modes
