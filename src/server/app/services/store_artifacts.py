@@ -13,7 +13,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -28,6 +28,7 @@ def validate_id(value: str) -> str:
 
 class StoreSnapshot(BaseModel):
     model_config = ConfigDict(extra='forbid')
+    schema_version: Literal[1] = 1
     store_id: str
     platform: str = Field(min_length=1, max_length=40)
     marketplace: str = Field(min_length=1, max_length=40)

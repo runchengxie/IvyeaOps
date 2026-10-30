@@ -19,7 +19,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, List
+from typing import Any, List, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -34,6 +34,15 @@ class Evidence(BaseModel):
     ``metric`` + ``value`` 是硬要求：没有这两样就不是证据，是感想。
     """
 
+    evidence_id: str = ''
+    evidence_type: Literal['observed','derived','estimate','inference','missing'] = 'inference'
+    store_id: str = ''
+    offer_id: str = ''
+    snapshot_id: str = ''
+    source_ref: str = ''
+    field_path: str = ''
+    derived_from: list[str] = Field(default_factory=list)
+    missing_reason: str = ''
     metric: str = Field(..., description="指标名，如 spend_30d / clicks / acos")
     value: Any = Field(..., description="指标值")
     unit: str = ""
@@ -61,11 +70,15 @@ class Action(BaseModel):
     target: str = Field("", description="作用对象")
     detail: str = ""
     guardrail: str = Field("", description="执行前提/阈值，如「点击≥15 且 0 单」")
+    required_evidence: list[str] = Field(default_factory=list)
     reversible: bool = True
     confidence: float = Field(0.0, ge=0.0, le=1.0)
 
 
 class Finding(BaseModel):
+    store_id: str = ''
+    offer_id: str = ''
+    snapshot_id: str = ''
     id: str = ""
     severity: str = "medium"
     title: str

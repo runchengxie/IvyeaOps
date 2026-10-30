@@ -115,3 +115,10 @@ def change_preview(store_id:str,product_id:str,body:ChangePreview):
 def assignment(store_id:str,issue_id:str,body:Assignment,actor=Depends(require_admin)):
     try:return service.assign(store_id,body.snapshot_id,issue_id,body.revision,body.owner,body.note,str(actor))
     except (OSError,ValueError) as exc:raise HTTPException(409,str(exc)) from exc
+
+
+@router.get('/stores/{store_id}/diagnostics')
+def diagnostics(store_id:str):
+    from app.services import emag_decisions, emag_commerce
+    try:return emag_decisions.diagnose(emag_commerce.source(store_id))
+    except (OSError,ValueError) as exc:raise HTTPException(404,str(exc)) from exc

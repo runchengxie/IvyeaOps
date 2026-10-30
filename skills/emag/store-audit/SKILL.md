@@ -14,3 +14,15 @@ description: Review an imported eMAG store snapshot through IvyeaOps MCP and sav
 保留读取快照时返回的 snapshot_id。如有报告写权限，调用 `ivyea_report_save(store_id, snapshot_id, title, markdown)` 保存，并通过 `ivyea_report_read(report_id)` 确认报告与快照证据一致。即使期间导入了新快照，报告仍绑定原先分析的版本。只有 read 令牌时，直接交付正文并说明未保存，不索取更大权限冒充必要条件。
 
 这个流程不修改真实商品、价格、库存、订单或广告，也不代表已核实账户全貌。后续具体经营操作依据用户的明确指令与相应工具权限处理。
+
+## Structured handoff and decision gate
+
+Use schema_version=1 snapshots; a legacy snapshot without a version is read as version 1, not rewritten. Keep store_id, offer_id and snapshot_id on each eMAG finding. Each evidence item must include evidence_id, evidence_type, source_ref, as_of and its exact field_path (for example /data/offers/0/general_stock). Resolve the path against that exact snapshot and confirm the row is the same offer. Never transfer evidence between products or snapshot versions.
+
+Classify evidence as observed, derived, estimate, inference or missing. A real numeric zero is observed; missing/invalid stock stays null with missing_reason. Tool errors are failures, not zero observations. Legacy prose remains inference. Record derived_from identifiers for computations and inferences; reject absent, cyclic, mismatched or unverified dependencies.
+
+Use deterministic diagnostics from the administrator diagnostics endpoint or the existing local audit CLI when available. The current verifier only certifies the registered platform-issue review template and its captured-status dependency. Derived and estimate values without registered verifiers are advisory; cost estimates cannot support verified profit or automatic price changes. Diagnostic output can be truncated: inspect total, checked and truncated counts rather than claiming every issue was verified.
+
+Proposals retain the original diagnosis. Approval rechecks current snapshot identity and field dependencies; an old proposal cannot be relabelled current. A later review names both the original and explicitly inspected new snapshot. If only snapshot/report MCP tools are available, provide a source-labelled advisory report and say the deterministic gate was not run; saving prose does not certify its claims. Quarantine cross-offer/prior-version comparisons as separate research, never as current-product evidence.
+
+No model or marketplace write endpoint is required for this chain. Do not treat return requests as confirmed refunds or use their reasons to represent all customers. Listing claim warnings are review hints, not compliance certification; images are not inspected by the text checker.

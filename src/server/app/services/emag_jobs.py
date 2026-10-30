@@ -92,6 +92,18 @@ def run(store_id, collect_fn=None):
             receipt['changes']=preview
             receipt['changes_truncated']=len(preview)!=len(delta)
             history, history_incomplete = emag_audit.history(snapshot)
+            from app.services import emag_decisions
+            diagnostics = emag_decisions.diagnose(snapshot)
+            diagnostic_lines=[]
+            for finding in diagnostics['findings']:
+                gate=emag_decisions.verify(finding,snapshot)
+                if not gate['valid']:raise ValueError('Invalid diagnostic evidence')
+                line=json.dumps(finding,ensure_ascii=False,allow_nan=False)
+                if len((''.join(diagnostic_lines)+line).encode('utf-8'))>48000:break
+                diagnostic_lines.append(line)
+            receipt['decision_gate']={'included_findings_valid':True,'findings_checked':len(diagnostic_lines),
+                'findings_total':len(issues),'truncated':len(diagnostic_lines)<len(issues),
+                'all_findings_verified':len(diagnostic_lines)==len(issues),'model_used':False}
             issue_details = emag_audit.render_issues(snapshot, history, previous if collect_fn else None,
                                                       history_incomplete=history_incomplete)
             text = '\n'.join(['# eMAG manual audit',f"Source: {snapshot['snapshot_id']}",
@@ -106,6 +118,8 @@ def run(store_id, collect_fn=None):
                 f"Issue references truncated: {len(issues)>200}",
                 '## Change preview','', '    '+json.dumps(preview,ensure_ascii=False), '',
                 f"Change preview truncated: {receipt['changes_truncated']}; compare the referenced source snapshots for complete evidence.",
+                '## Structured diagnostic evidence (bounded)',*['    '+line for line in diagnostic_lines],
+                f"Diagnostic evidence truncated: {diagnostics['findings_truncated'] or len(diagnostic_lines)<len(diagnostics['findings'])}",
                 '## Source limitations',*['- '+emag_audit._cell(x, 500) for x in snapshot['limitations']]])
             report=artifacts.save_report(store_id,snapshot['snapshot_id'],'eMAG manual audit',text)
             receipt.update(report_id=report['report_id'],status='complete',stage='complete')

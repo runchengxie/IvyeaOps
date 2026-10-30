@@ -240,3 +240,10 @@ def test_language_headers_do_not_change_workspace_facts(sample):
             assert response.status_code==200
             bodies.append(response.json())
         assert bodies[0]==bodies[1]==bodies[2]
+
+
+def test_listing_quality_is_persisted_with_bound_draft(sample):
+    source=sample()
+    draft=workspace.save_draft('demo-ro',source['snapshot_id'],'listing','1','IP68 bottle','Waterproof 500ml','operator')
+    assert draft['quality_check']['requires_review'] is True
+    assert workspace.view('demo-ro')['drafts'][0]['quality_check']==draft['quality_check']
