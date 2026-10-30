@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Correct eMAG scenario revenue to use the API’s VAT-exclusive sale_price directly; label the gross-price commission assumption and seller price bounds explicitly. Existing inputs are retained.
+
 - Add existing-stock clearance priorities, reconciled aging observations and bounded stock-change reviews to the dashboard and playbook.
 
 - Remove the procurement record's 100-edit lifetime limit with transactional revision archiving and administrator history pagination.
