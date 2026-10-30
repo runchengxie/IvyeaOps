@@ -101,6 +101,7 @@ def database():
     conn = sqlite3.connect(settings.data_dir / 'emag-commerce.sqlite3', timeout=15)
     try:
         conn.execute('CREATE TABLE IF NOT EXISTS products (store TEXT, product TEXT, payload TEXT, PRIMARY KEY(store,product))')
+        conn.execute('CREATE TABLE IF NOT EXISTS revisions (store TEXT, product TEXT, revision INTEGER, payload TEXT, PRIMARY KEY(store,product,revision))')
         with conn:
             yield conn
     finally:
@@ -139,9 +140,14 @@ def save(store_id, snapshot_id, product_id, revision, inputs, actor):
         old = json.loads(row[0]) if row else {'revision': 0, 'history': []}
         if type(revision) is not int or revision != old['revision']:
             raise ValueError('Record changed; reload first')
-        history = old['history'] + [{'revision': revision+1, 'actor': actor, 'at': datetime.now(timezone.utc).isoformat(), 'inputs': inputs}]
-        if len(history) > 100:
-            raise ValueError('Record history limit reached (100 revisions); further edits unavailable')
+        history = old['history'] + [{'revision': revision+1, 'snapshot_id': snapshot_id, 'actor': actor, 'at': datetime.now(timezone.utc).isoformat(), 'inputs': inputs}]
+        for entry in history:
+            existing=conn.execute('SELECT payload FROM revisions WHERE store=? AND product=? AND revision=?',(store_id,product_id,entry['revision'])).fetchone()
+            if existing and json.loads(existing[0])!=entry:
+                raise ValueError('Archived history conflict; refusing to overwrite evidence')
+            if not existing:
+                conn.execute('INSERT INTO revisions VALUES (?,?,?,?)',(store_id,product_id,entry['revision'],json.dumps(entry)))
+        history=history[-100:]
         record = {'snapshot_id': snapshot_id, 'revision': revision+1, 'inputs': inputs, 'actor': actor, 'history': history}
         conn.execute('INSERT OR REPLACE INTO products VALUES (?,?,?)', (store_id, product_id, json.dumps(record)))
     return record
@@ -162,3 +168,19 @@ def preview(snapshot, offer, changes):
         result.append({'field': key, 'before': offer[key], 'after': str(parsed)})
     return {'snapshot_id': snapshot['snapshot_id'], 'product_id': str(offer['id']), 'changes': result,
             'executable': False, 'reason': 'Marketplace writer unavailable; this is a local preview only.'}
+
+
+
+def history(store_id, product_id, before_revision=None):
+    artifacts.validate_id(store_id)
+    if before_revision is not None and (type(before_revision) is not int or not 1<=before_revision<=9223372036854775807):
+        raise ValueError('History cursor must be a positive integer')
+    with database() as conn:
+        rows=conn.execute('SELECT payload FROM revisions WHERE store=? AND product=? AND (? IS NULL OR revision<?) ORDER BY revision DESC LIMIT 101',
+                          (store_id,product_id,before_revision,before_revision)).fetchall()
+        entries=[json.loads(row[0]) for row in rows]
+        if not entries:
+            row=conn.execute('SELECT payload FROM products WHERE store=? AND product=?',(store_id,product_id)).fetchone()
+            if row:
+                entries=sorted((e for e in json.loads(row[0]).get('history',[]) if before_revision is None or e['revision']<before_revision),key=lambda e:e['revision'],reverse=True)[:101]
+    return {'entries':entries[:100],'next_before':entries[99]['revision'] if len(entries)>100 else None}

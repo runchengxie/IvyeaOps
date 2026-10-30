@@ -122,3 +122,10 @@ def diagnostics(store_id:str):
     from app.services import emag_decisions, emag_commerce
     try:return emag_decisions.diagnose(emag_commerce.source(store_id))
     except (OSError,ValueError) as exc:raise HTTPException(404,str(exc)) from exc
+
+
+@router.get('/stores/{store_id}/commerce/{product_id}/history')
+def commerce_history(store_id:str,product_id:str,before_revision:int|None=None):
+    from app.services import emag_commerce
+    try:return emag_commerce.history(store_id,product_id,before_revision)
+    except (OSError,ValueError) as exc:raise HTTPException(409,str(exc)) from exc

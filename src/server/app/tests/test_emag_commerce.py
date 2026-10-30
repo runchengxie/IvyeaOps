@@ -106,3 +106,43 @@ def test_invalid_price_evidence_keeps_cost_record_readable(price):
     result=commerce.calculate(costs(),{'sale_price':price})
     assert result['economics']['contribution_ron'] is None
     assert 'sale_price' in result['economics']['missing']
+
+
+def test_more_than_100_updates_keep_paginated_immutable_history(snapshot):
+    snap=snapshot()
+    for revision in range(105):
+        commerce.save('demo-ro',snap['snapshot_id'],'1',revision,{'purchase_cny':str(revision)},'operator')
+    record=commerce.view('demo-ro')['products'][0]['record']
+    assert record['revision']==105 and len(record['history'])==100
+    first=commerce.history('demo-ro','1')
+    assert first['entries'][0]['revision']==105
+    assert first['next_before']==6
+    second=commerce.history('demo-ro','1',before_revision=6)
+    assert [e['revision'] for e in second['entries']]==[5,4,3,2,1]
+    assert second['entries'][-1]['inputs']['purchase_cny']=='0'
+    assert commerce.history('other-ro','1')['entries']==[]
+
+
+def test_legacy_inline_history_survives_first_archive_save(snapshot):
+    import json
+    snap=snapshot()
+    old={'snapshot_id':snap['snapshot_id'],'revision':100,'inputs':{},'actor':'legacy',
+         'history':[{'revision':i,'actor':'legacy','at':'2026-10-30T00:00:00Z','inputs':{'note':str(i)}} for i in range(1,101)]}
+    with commerce.database() as conn:
+        conn.execute('INSERT INTO products VALUES (?,?,?)',('demo-ro','1',json.dumps(old)))
+    assert commerce.history('demo-ro','1')['entries'][0]['revision']==100
+    commerce.save('demo-ro',snap['snapshot_id'],'1',100,{},'operator')
+    assert commerce.history('demo-ro','1',before_revision=2)['entries'][0]['inputs']['note']=='1'
+
+
+def test_archive_conflict_rolls_back_latest_record(snapshot):
+    import json
+    snap=snapshot()
+    commerce.save('demo-ro',snap['snapshot_id'],'1',0,{'note':'original'},'operator')
+    with commerce.database() as conn:
+        conn.execute('UPDATE revisions SET payload=? WHERE store=? AND product=? AND revision=1',
+                     (json.dumps({'revision':1,'inputs':{'note':'conflict'}}),'demo-ro','1'))
+    with pytest.raises(ValueError,match='Archived history conflict'):
+        commerce.save('demo-ro',snap['snapshot_id'],'1',1,{'note':'next'},'operator')
+    assert commerce.view('demo-ro')['products'][0]['record']['revision']==1
+    assert len(commerce.history('demo-ro','1')['entries'])==1

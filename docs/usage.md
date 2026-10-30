@@ -123,3 +123,9 @@ The administrator diagnostics endpoint returns bounded, deterministic platform-i
 Job reports include bounded JSON diagnostic handoffs. decision_gate reports included_findings_valid, findings_checked, findings_total, truncated and all_findings_verified separately. A truncated report is not verification of every store issue. These checks establish internal evidence consistency, not marketplace source accuracy.
 
 The research page groups captured return-request reasons by product and normalized reported text, deduplicating repeated cases. It reports missing reasons, unmatched products and malformed rows. These requests are not confirmed refunds and cannot represent overall satisfaction. Local Listing drafts receive conservative claim warnings for selected certifications, functions and measurements; no flag is a compliance pass, and images are not inspected.
+
+## Procurement revision history
+
+Procurement edits no longer stop at 100 revisions. Each revision is archived separately in the existing private commerce database, within the same transaction as the latest record. Existing inline history is copied on the next successful edit; conflicting archive data aborts the edit instead of overwriting evidence. New revisions record the source snapshot ID; legacy revisions retain their original fields without invented provenance.
+
+Latest records still include only the most recent 100 history entries. Administrators can page older history with GET /api/emag/stores/{store_id}/commerce/{product_id}/history and the exclusive before_revision cursor returned as next_before. Each page contains at most 100 entries. Existing authentication and backup boundaries apply.
