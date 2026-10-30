@@ -16,6 +16,7 @@ def _connect():
     root = settings.data_dir
     root.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(root / 'emag-operations.sqlite3', timeout=15)
+    conn.execute('CREATE TABLE IF NOT EXISTS assignments (store TEXT, issue TEXT, payload TEXT, PRIMARY KEY(store,issue))')
     conn.execute('CREATE TABLE IF NOT EXISTS records (store TEXT, snapshot TEXT, issue TEXT, payload TEXT, PRIMARY KEY(store,snapshot,issue))')
     try:
         with conn:
@@ -63,6 +64,8 @@ def board(store_id):
     issues = _issues(snapshot)
     with _connect() as conn:
         for issue in issues:
+            assignment = conn.execute('SELECT payload FROM assignments WHERE store=? AND issue=?', (store_id,issue['issue_id'])).fetchone()
+            issue['assignment'] = json.loads(assignment[0]) if assignment else {'owner':'','revision':0,'history':[]}
             saved = conn.execute('SELECT payload FROM records WHERE store=? AND snapshot=? AND issue=?',
                                  (store_id,snapshot['snapshot_id'],issue['issue_id'])).fetchone()
             issue.update(json.loads(saved[0]) if saved else {'state':'pending','revision':0,'history':[]})
@@ -99,3 +102,25 @@ def transition(store_id, snapshot_id, issue_id, state, revision, note, actor, re
         current['history'].append({'state':state,'note':note.strip(),'actor':actor,'at':datetime.now(timezone.utc).isoformat()})
         conn.execute('INSERT OR REPLACE INTO records VALUES (?,?,?,?)',(store_id,snapshot_id,issue_id,json.dumps(current)))
     return {'issue_id':issue_id,**current}
+
+
+
+def assign(store_id, snapshot_id, issue_id, revision, owner, note, actor):
+    if not isinstance(owner, str) or len(owner) > 100 or not note.strip() or len(note) > 4000:
+        raise ValueError('Owner must be at most 100 characters and note 1–4000 characters')
+    with artifacts.snapshot_guard(), _connect() as conn:
+        snapshot = artifacts.read_snapshot(store_id)
+        if snapshot['snapshot_id'] != snapshot_id or issue_id not in {i['issue_id'] for i in _issues(snapshot)}:
+            raise ValueError('Issue evidence is stale or absent')
+        conn.execute('BEGIN IMMEDIATE')
+        row = conn.execute('SELECT payload FROM assignments WHERE store=? AND issue=?', (store_id,issue_id)).fetchone()
+        current = json.loads(row[0]) if row else {'revision':0,'history':[]}
+        if type(revision) is not int or revision != current['revision']:
+            raise ValueError('Assignment changed; reload first')
+        if len(current['history']) >= 100:
+            raise ValueError('Assignment history limit reached')
+        current.update(owner=owner.strip(), revision=revision+1)
+        current['history'].append({'owner':owner.strip(),'note':note.strip(),'actor':actor,
+                                   'snapshot_id':snapshot_id,'at':datetime.now(timezone.utc).isoformat()})
+        conn.execute('INSERT OR REPLACE INTO assignments VALUES (?,?,?)',(store_id,issue_id,json.dumps(current)))
+    return current

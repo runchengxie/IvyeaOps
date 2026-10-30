@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add persistent issue ownership and local 1688 supplier mapping, explicit unit-cost and replenishment scenarios, and snapshot-bound non-executing price/stock previews in Analysis tools.
+
 - Add an optional manually triggered Windows task for SSH access to the read-only eMAG job.
 
 - Expand `~` in the configured data directory for the server and Skill Studio.

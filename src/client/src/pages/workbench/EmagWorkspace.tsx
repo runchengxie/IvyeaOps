@@ -1,3 +1,4 @@
+import EmagCommerce from './EmagCommerce';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
@@ -30,7 +31,7 @@ export default function EmagWorkspace({mode}:{mode:WorkspaceMode}){
     {error&&<p role="alert">{error}</p>}{!stores.length&&!error&&<p>暂无 eMAG RO 快照。请先通过手动无头命令采集。</p>}
     {data&&<><p>采集时间 {new Date(data.captured_at).toLocaleString()} · {data.offers.length} 条商品 · 异常原因 {data.issues.length} 项</p>
       <details><summary>来源、版本与限制</summary><p>{data.source} · {data.snapshot_id}</p><p>覆盖：{data.coverage.join('、')}</p><ul>{data.limitations.map((x,i)=><li key={i}>{x}</li>)}</ul></details>
-      {mode==='dashboard'&&<EmagDashboard data={data}/>}
+      {mode==='dashboard'&&<EmagDashboard data={data}/>} {mode==='tools'&&<EmagCommerce key={store} store={store}/>}
       {mode==='market'&&<section><h2>本店商品结构</h2><p>按平台 category_id 统计，不代表市场需求或竞品份额。全市场搜索量、竞品价格与销量尚未接入。</p><ul>{[...categories].sort((a,b)=>b[1]-a[1]).map(([c,n])=><li key={c}>类目 {c}：{n} 条</li>)}</ul><p>可在下方保存有来源链接、采集日期和观察范围的人工调研记录。</p></section>}
       {mode==='playbook'&&<section><h2>依据现有异常安排动作</h2><ol><li>优先核实有库存且价格无效的商品：{data.issues.filter(i=>i.reason==='invalid_price'&&(i.general_stock??0)>0).length} 条。</li><li>资料拒绝与封锁逐项核对平台原因，补齐凭证后人工处理。</li><li>补齐采购成本、运费与税费后再评估售价，复查必须采集新快照。</li></ol><p>此处保存方案草稿；审批与人工执行记录在巡检页逐步填写。</p></section>}
       {mode==='tools'&&<section><h2>资料质量与巡检回执</h2><p>库存未知 {typeof data.summary.stock_unknown==='number' ? data.summary.stock_unknown : '未知'} 条 · 标题缺失 {data.offers.filter(o=>!o.name?.trim()).length} 条 · 售价缺失 {data.offers.filter(o=>o.sale_price==null).length} 条。</p>{job?<><p>最近任务：{String(job.status)} · {String(job.mode)} · 阶段 {String(job.stage)}</p><p>回执版本：{String(job.snapshot_id||'未生成')} · {job.snapshot_id===data.snapshot_id?'与当前资料一致':'与当前资料不同'}</p><details><summary>增量与报告引用</summary><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(job,null,2)}</pre></details></>:<p>尚无手动巡检回执。离线重放不会重新采集，也不产生新旧变化结论。</p>}</section>}
