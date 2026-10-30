@@ -89,3 +89,14 @@ def test_publication_respects_shared_guard(evidence):
             assert started.wait(2)
             assert not future.done()
         assert future.result(timeout=5)['snapshot_id']
+
+def test_ownership_survives_new_snapshot_without_carrying_approval(evidence):
+    first=evidence()
+    issue=ops.board('demo-ro')['issues'][0]
+    result=ops.assign('demo-ro',first['snapshot_id'],issue['issue_id'],0,'Alice','Investigate platform error','admin')
+    assert result['owner']=='Alice'
+    with pytest.raises(ValueError): ops.assign('demo-ro',first['snapshot_id'],issue['issue_id'],0,'Bob','note','admin')
+    evidence()
+    item=ops.board('demo-ro')['issues'][0]
+    assert item['assignment']['owner']=='Alice'
+    assert item['state']=='pending'

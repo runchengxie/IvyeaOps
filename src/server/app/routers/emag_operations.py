@@ -63,3 +63,55 @@ def update(store_id:str,issue_id:str,body:Update,actor=Depends(require_admin)):
         return service.transition(store_id,body.snapshot_id,issue_id,body.state,body.revision,body.note,str(actor),body.review_snapshot_id)
     except (OSError,ValueError) as exc:
         raise HTTPException(409,str(exc)) from exc
+
+class CommercialRecord(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    snapshot_id:str
+    revision:int=Field(ge=0)
+    inputs:dict
+
+
+class ChangePreview(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    snapshot_id:str
+    changes:dict
+
+
+class Assignment(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    snapshot_id:str
+    revision:int=Field(ge=0)
+    owner:str=Field(max_length=100)
+    note:str=Field(min_length=1,max_length=4000)
+
+
+@router.get('/stores/{store_id}/commerce')
+def commerce_view(store_id:str):
+    from app.services import emag_commerce
+    try:return emag_commerce.view(store_id)
+    except (OSError,ValueError) as exc:raise HTTPException(404,str(exc)) from exc
+
+
+@router.post('/stores/{store_id}/commerce/{product_id}')
+def commerce_save(store_id:str,product_id:str,body:CommercialRecord,actor=Depends(require_admin)):
+    from app.services import emag_commerce
+    try:return emag_commerce.save(store_id,body.snapshot_id,product_id,body.revision,body.inputs,str(actor))
+    except (OSError,ValueError) as exc:raise HTTPException(409,str(exc)) from exc
+
+
+@router.post('/stores/{store_id}/preview/{product_id}')
+def change_preview(store_id:str,product_id:str,body:ChangePreview):
+    from app.services import emag_commerce
+    try:
+        snapshot=emag_commerce.source(store_id)
+        if snapshot['snapshot_id']!=body.snapshot_id:raise ValueError('Evidence is stale; reload first')
+        offer=next((o for o in snapshot['data']['offers'] if str(o['id'])==product_id),None)
+        if offer is None:raise ValueError('Product absent from current snapshot')
+        return emag_commerce.preview(snapshot,offer,body.changes)
+    except (OSError,ValueError) as exc:raise HTTPException(409,str(exc)) from exc
+
+
+@router.post('/stores/{store_id}/issues/{issue_id}/assignment')
+def assignment(store_id:str,issue_id:str,body:Assignment,actor=Depends(require_admin)):
+    try:return service.assign(store_id,body.snapshot_id,issue_id,body.revision,body.owner,body.note,str(actor))
+    except (OSError,ValueError) as exc:raise HTTPException(409,str(exc)) from exc

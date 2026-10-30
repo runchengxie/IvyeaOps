@@ -103,3 +103,13 @@ MCP uses bearer tokens at `/api/mcp`; session login does not replace the token. 
 ## Schedule preparation
 
 `/schedules` previews a future cron in server timezone and exports a JSON draft with `enabled=false`, `registered=false`, `scheduler_connected=false`. No current scheduler consumes it. `/schedules?tab=agent` is the existing model-dependent prompt scheduler. Do not infer automatic eMAG execution from a draft or from a manual run receipt.
+
+## Procurement and operating scenarios
+
+The Analysis tools workbench provides local, revision-checked supplier records for products in the current eMAG RO snapshot. Enter a canonical HTTPS 1688 offer URL, exact supplier specification and explicit human confirmation. Search similarity is not evidence of an actual procurement match. No supplier is automatically selected and no 1688 quote tracking is scheduled.
+
+All expense inputs are per unit. Missing values block the contribution estimate; enter zero only when the expense is confirmed absent. CNY-to-RON conversion is an explicit user input. The scenario assumes snapshot selling price includes the entered sales VAT rate, removes that VAT, subtracts commission on the VAT-inclusive price and the entered unit expenses. It does not infer recoverable purchase VAT, corporate tax or accounting profit. Reference quotations and actual procurement inputs remain distinguishable. The quote timestamp and source notes should record provenance; no current exchange rate is fetched.
+
+Replenishment uses explicitly entered daily demand, lead time, safety days, inbound and reserved stock. It computes ceil(max(0, demand*(lead+safety)-(captured stock+inbound-reserved))). These are manual planning scenarios, not verified forecasts or purchase orders. Validate usable stock, cancellation/return effects, supplier MOQ and case sizes before purchasing.
+
+Price/stock previews bind the current snapshot and show old/new values. They cannot execute marketplace updates. Issue ownership is independently versioned and persists across snapshots; proposal approvals retain their original snapshot binding and do not carry forward automatically.
