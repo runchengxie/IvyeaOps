@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add an optional manually triggered Windows task for SSH access to the read-only eMAG job.
+
 - Expand `~` in the configured data directory for the server and Skill Studio.
 
 - Add a read-only exact SKU CLI query that does not import a store snapshot.
