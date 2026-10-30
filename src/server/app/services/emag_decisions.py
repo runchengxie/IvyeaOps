@@ -108,5 +108,3 @@ def verify(raw, snapshot):
     except (ValueError,KeyError,TypeError) as exc:
         errors.append(str(exc))
     return {'valid':not errors,'errors':errors,'marketplace_writes':False}
-
-
