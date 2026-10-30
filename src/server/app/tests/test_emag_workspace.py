@@ -247,3 +247,11 @@ def test_listing_quality_is_persisted_with_bound_draft(sample):
     draft=workspace.save_draft('demo-ro',source['snapshot_id'],'listing','1','IP68 bottle','Waterproof 500ml','operator')
     assert draft['quality_check']['requires_review'] is True
     assert workspace.view('demo-ro')['drafts'][0]['quality_check']==draft['quality_check']
+
+
+def test_daily_audit_includes_stock_clearance_context(sample):
+    sample()
+    result=jobs.run('demo-ro')
+    report=artifacts.read_report(result['report_id'])
+    assert 'Existing-stock clearance' in report['markdown']
+    assert 'Stock movement is not verified sales' in report['markdown']

@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add existing-stock clearance priorities, reconciled aging observations and bounded stock-change reviews to the dashboard and playbook.
+
 - Remove the procurement record's 100-edit lifetime limit with transactional revision archiving and administrator history pagination.
 
 - Add versioned field-level eMAG diagnostics and approval evidence gates, bounded return-reason observations, and local Listing claim-review hints.

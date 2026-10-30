@@ -18,6 +18,7 @@ git log 记得住「改了什么」，记不住「为什么不选另一条路」
 
 | 编号 | 决策 | 日期 |
 |---|---|---|
+| [0051](./0051-existing-stock-clearance.md) | Existing-stock clearance priorities | 2026-10-31 |
 | [0050](./0050-procurement-revision-archive.md) | Procurement revision archive | 2026-10-31 |
 | [0049](./0049-field-bound-review-gates.md) | Field-bound deterministic review gates | 2026-10-31 |
 | [0048](./0048-local-procurement-scenarios.md) | Local procurement and planning scenarios | 2026-10-31 |

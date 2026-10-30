@@ -1,0 +1,152 @@
+{
+  "offers": [
+    {
+      "id": 1,
+      "name": "Synthetic blocked item",
+      "part_number": "DEMO-SKU",
+      "general_stock": 3,
+      "offer_validation_status": {
+        "value": 2
+      },
+      "stock_2p_aging_bands": {
+        "0-30": 0,
+        "31-60": 0,
+        "61-90": 0,
+        "91-180": 0,
+        "181-270": 0,
+        "271-365": 0,
+        "365+": 3
+      }
+    },
+    {
+      "id": 2,
+      "name": "Synthetic old item",
+      "part_number": "OLD-SKU",
+      "general_stock": 5,
+      "stock_2p_aging_bands": {
+        "0-30": 0,
+        "31-60": 0,
+        "61-90": 0,
+        "91-180": 0,
+        "181-270": 0,
+        "271-365": 0,
+        "365+": 5
+      }
+    },
+    {
+      "id": 3,
+      "name": "Unknown stock item"
+    },
+    {
+      "id": 4,
+      "name": "Zero stock item",
+      "general_stock": 0
+    }
+  ],
+  "clearance": {
+    "store_id": "demo-ro",
+    "snapshot_id": "demo-v1",
+    "captured_at": "2026-10-28T00:00:00Z",
+    "summary": {
+      "products": 4,
+      "stock_known_total": 8,
+      "unknown_stock_products": 1,
+      "blocked_with_stock_products": 1,
+      "blocked_with_stock_units": 3,
+      "aged_181_plus_known": 8,
+      "aging_inconsistent_products": 0,
+      "aging_unknown_products": 2
+    },
+    "rows": [
+      {
+        "offer_id": "1",
+        "name": "Synthetic blocked item",
+        "sku": "DEMO-SKU",
+        "stock": 3,
+        "aging_status": "consistent",
+        "aged_181_plus": 3,
+        "aged_365_plus": 3,
+        "priority": "restore_sales",
+        "issues": [
+          {
+            "issue_id": "demo-issue",
+            "reason": "invalid_price"
+          }
+        ],
+        "sale_price": null,
+        "source_refs": {
+          "stock": "/data/offers/0/general_stock",
+          "aging": "/data/offers/0/stock_2p_aging_bands"
+        }
+      },
+      {
+        "offer_id": "2",
+        "name": "Synthetic old item",
+        "sku": "OLD-SKU",
+        "stock": 5,
+        "aging_status": "consistent",
+        "aged_181_plus": 5,
+        "aged_365_plus": 5,
+        "priority": "review_aged_stock",
+        "issues": [],
+        "sale_price": null,
+        "source_refs": {
+          "stock": "/data/offers/1/general_stock",
+          "aging": "/data/offers/1/stock_2p_aging_bands"
+        }
+      },
+      {
+        "offer_id": "3",
+        "name": "Unknown stock item",
+        "sku": null,
+        "stock": null,
+        "aging_status": "unknown",
+        "aged_181_plus": null,
+        "aged_365_plus": null,
+        "priority": "verify_stock",
+        "issues": [],
+        "sale_price": null,
+        "source_refs": {
+          "stock": "/data/offers/2/general_stock",
+          "aging": "/data/offers/2/stock_2p_aging_bands"
+        }
+      },
+      {
+        "offer_id": "4",
+        "name": "Zero stock item",
+        "sku": null,
+        "stock": 0,
+        "aging_status": "unknown",
+        "aged_181_plus": null,
+        "aged_365_plus": null,
+        "priority": "zero_stock",
+        "issues": [],
+        "sale_price": null,
+        "source_refs": {
+          "stock": "/data/offers/3/general_stock",
+          "aging": "/data/offers/3/stock_2p_aging_bands"
+        }
+      }
+    ],
+    "weekly_stock_change": {
+      "status": "unavailable",
+      "net_decrease": null,
+      "history_incomplete": false
+    },
+    "order_observations": {
+      "resources": [],
+      "status_counts": {},
+      "invalid_or_duplicate_records": 0,
+      "verified_sales_units": null,
+      "window": null
+    },
+    "limitations": [
+      "Tracked blockers are observations, not a full availability check.",
+      "Only complete age bands reconciled to total stock affect aging priority.",
+      "Stock decrease is not verified sales: returns, adjustments and transfers may change inventory.",
+      "Order status semantics, costs and payment reconciliation are unverified; no recovery value, clearance price or sell-through forecast is computed.",
+      "A weekly comparison uses the closest compatible scanned snapshot at least seven days earlier; its interval may exceed seven days."
+    ],
+    "marketplace_writes": false
+  }
+}

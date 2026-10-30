@@ -129,3 +129,13 @@ The research page groups captured return-request reasons by product and normaliz
 Procurement edits no longer stop at 100 revisions. Each revision is archived separately in the existing private commerce database, within the same transaction as the latest record. Existing inline history is copied on the next successful edit; conflicting archive data aborts the edit instead of overwriting evidence. New revisions record the source snapshot ID; legacy revisions retain their original fields without invented provenance.
 
 Latest records still include only the most recent 100 history entries. Administrators can page older history with GET /api/emag/stores/{store_id}/commerce/{product_id}/history and the exclusive before_revision cursor returned as next_before. Each page contains at most 100 entries. Existing authentication and backup boundaries apply.
+
+## Existing-stock clearance
+
+The dashboard and playbook provide an existing-inventory clearance view. It performs no procurement, replenishment or marketplace updates. Known positive stock with tracked price/documentation/block flags sorts first, followed by positive stock with reconciled inventory older than 180 days, then remaining positive stock. Unknown and zero stock are separate. Within a group, verified 365+ and 181+ quantities and stock break ties; there is no predictive business score.
+
+Aging priority requires all seven known bands (0-30, 31-60, 61-90, 91-180, 181-270, 271-365, 365+) to be nonnegative integers and reconcile to captured total stock. Unknown/mismatched aging is labelled and excluded from aged-unit subtotals. Observed blocker flags are not a complete check that an offer is sellable.
+
+A stock-change review uses the closest compatible scanned snapshot at least seven days earlier. It reports matched known-stock products and net inventory decrease, separately counting newly observed and unobserved products. The interval may exceed seven days; disappearance is not treated as a sale or zero stock. Returns, transfers and adjustments can also move stock. Raw order-status counts remain observations, not verified sales, cash receipts or sell-through forecasts.
+
+Operators can follow issue links or create a local source-bound playbook draft for a product. Exact price changes and cash-recovery estimates still require human review and historical cost/fee evidence. No automatic markdown or purchase order is generated.

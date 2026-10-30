@@ -29,7 +29,10 @@ def view(store_id):
     for draft in drafts:
         draft['stale'] = draft['snapshot_id'] != snapshot['snapshot_id']
     from app.services import emag_quality
-    return {**board, 'offers': snapshot['data']['offers'], 'drafts': drafts, 'return_voc':emag_quality.return_voc(snapshot)}
+    from app.services import emag_clearance, emag_audit
+    previous,incomplete=emag_audit.history(snapshot)
+    return {**board, 'offers': snapshot['data']['offers'], 'drafts': drafts, 'return_voc':emag_quality.return_voc(snapshot),
+            'clearance':emag_clearance.build(snapshot,previous,incomplete)}
 
 
 def save_draft(store_id, snapshot_id, kind, product_id, title, body, actor):
