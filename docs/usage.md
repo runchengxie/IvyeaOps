@@ -22,6 +22,23 @@ The inspection page filters observed issues by product, reason, stock and local 
 
 ## CLI
 
+### Optional manual Windows task for SSH
+
+On Windows with PowerShell 7, an interactive user session can run the existing read-only eMAG job on demand when an SSH session cannot read its saved credential. From a source checkout, install the optional task under the account that owns the credential, then trigger it from SSH as the same user:
+
+```powershell
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action install -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action run -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action status -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action uninstall -StoreId example-ro
+```
+
+`example-ro` is a placeholder. Install creates an on-demand task with no scheduled triggers and refuses to overwrite an existing task. The Windows account must remain logged in, the checkout and its server venv must remain at the installed path, and the account needs access to the eMAG credential and API. Run waits up to 180 seconds by default for a new job receipt; a timeout does not cancel a running task. Check status before retrying. Status can show an older receipt, so compare its time and run ID. Uninstall removes the managed task only and retains credentials and data. No marketplace writes are performed. A successful local test does not guarantee every Windows SSH or task configuration can access the credential.
+
+The integration keeps its latest control receipt and trigger lock under `%LOCALAPPDATA%/ivyeaops/emag-ssh-task/<store>/`; these files are separate from the application's configured data directory and its backups. The task uses its own user-session environment and server `.env`, which can differ from the SSH process environment and proxy settings. Install from the permanent checkout, not a temporary worktree. If the checkout moves, uninstall from the old path and reinstall at the new path.
+
+Use the `run` entry point to trigger this managed task. Direct Task Scheduler calls bypass its caller lock, so a simultaneous external trigger can make the receipt ambiguous. `-Days` is fixed at installation; uninstall and reinstall to change it.
+
 For a single read-only SKU check, run `.venv/Scripts/python.exe -m app.emag_cli --sku example-sku` on Windows (use `.venv/bin/python` on Unix). This queries `part_number` and prints bounded offer evidence with a capture time; it does not import a snapshot or change marketplace data. `found` requires one exact match, `not_found` means no result was returned, and ambiguous, malformed or failed responses are `incomplete`. A missing result is not proof of delisting. Do not combine `--sku` with `--store-id`; `--describe --sku example-sku` makes no request. `evidence_truncated` flags truncated text or status evidence on found results. Output may contain private seller data.
 
 

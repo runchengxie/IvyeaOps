@@ -18,6 +18,23 @@ eMAG 驾驶舱提供当前快照的管理视角和专员视角。指标卡在数
 
 ## CLI
 
+### 可选的 Windows SSH 手动任务
+
+在安装 PowerShell 7 的 Windows 上，如果 SSH 会话无法读取保存的凭据，可以让已登录的交互式用户会话按需运行现有 eMAG 只读任务。在源码目录下，以持有凭据的账号安装，然后以同一用户从 SSH 触发：
+
+```powershell
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action install -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action run -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action status -StoreId example-ro
+pwsh -NoProfile -File scripts/emag-ssh-task.ps1 -Action uninstall -StoreId example-ro
+```
+
+`example-ro` 是占位标签。安装仅创建按需运行的任务，不创建定时触发器，且不会覆盖已有任务。Windows 用户必须保持登录，源码目录及其服务器 venv 必须保持在安装时的位置，该账号还需要有 eMAG 凭据和 API 访问权限。运行默认最多等待 180 秒以获取新回执；超时不会取消正在运行的任务，重试前应查看状态。状态可能显示旧回执，应核对时间和运行 ID。卸载只移除受管任务，保留凭据和数据。该任务不会写入平台。本机测试成功不保证所有 Windows SSH 或任务配置都能读取凭据。
+
+集成将最新控制回执和触发锁保存在 `%LOCALAPPDATA%/ivyeaops/emag-ssh-task/<store>/`，与应用配置的数据目录及其备份分开。任务使用自身用户会话的环境和服务器 `.env`，可能与 SSH 进程的环境和代理设置不同。请从永久保留的源码目录安装，不要从临时 worktree 安装。迁移源码目录时，请先从旧路径卸载，再从新路径重新安装。
+
+请通过 `run` 入口触发受管任务。直接调用任务计划程序不会取得该入口的调用锁，若同时从外部触发，回执可能无法明确归属。`-Days` 在安装时固定；需要修改时请卸载后重新安装。
+
 单件只读 SKU 核查可在 Windows 运行 `.venv/Scripts/python.exe -m app.emag_cli --sku example-sku`，Unix 使用 `.venv/bin/python`。命令按 `part_number` 查询并输出带采集时间的精简商品证据，不导入快照或修改平台数据。`found` 需要唯一精确匹配，`not_found` 表示没有返回结果；多条、不匹配、格式错误或请求失败为 `incomplete`。无结果不代表商品已下架。`--sku` 不能与 `--store-id` 同用；`--describe --sku example-sku` 不发送请求。匹配结果中的 `evidence_truncated` 标记文本或状态证据是否被截断。输出可能包含店铺私有数据。
 
 
