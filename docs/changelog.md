@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Expand `~` in the configured data directory for the server and Skill Studio.
+
 - Add a read-only exact SKU CLI query that does not import a store snapshot.
 
 - Restore the legacy promotion and advertising page container styles by fixing an invalid CSS comment.

@@ -50,7 +50,7 @@ _STUDIO_ENV = os.getenv("IVYEA_OPS_STUDIO_ROOT")
 # 直接认 IVYEA_OPS_DATA_DIR（与 config.Settings 同一个开关），这样重载本模块就能
 # 换根，不必去 reload app.core.config —— 那会造出第二个 settings 实例，而别的模块
 # 还握着旧那个，测试之间会互相串。
-_DATA_DIR = Path(os.getenv("IVYEA_OPS_DATA_DIR") or settings.data_dir)
+_DATA_DIR = Path(os.getenv("IVYEA_OPS_DATA_DIR") or settings.data_dir).expanduser()
 
 SKILLS_ROOT: Path = Path(_SKILLS_ENV or (_DATA_DIR / "skills")).resolve()
 STUDIO_ROOT: Path = Path(_STUDIO_ENV or (_DATA_DIR / "skill-studio")).resolve()

@@ -6,6 +6,8 @@ This is the canonical instruction file for coding agents. User and session instr
 
 This AGPL-3.0 fork focuses on eMAG RO evidence workflows and retains explicit legacy Amazon tools. React/Vite code is in `src/client`, FastAPI code in `src/server`, management entry points in `scripts`, and maintained docs in `docs`. Data, credentials and private exploration belong in ignored local storage, never personal notes unless the user requests it.
 
+Use `IVYEA_OPS_DATA_DIR` from the local server environment or process environment for application data; see `configs/server.env.example` and `docs/configuration.md`. Keep private exploration and generated artifacts outside tracked files. Do not publish personal absolute paths or credentials.
+
 ## Work process
 
 Use the five-step flow: understand scope, design, review the design, implement fully, verify. Do not skip required confirmation when scope is unapproved. Existing authorization remains valid; do not repeatedly ask for an already authorized action.
