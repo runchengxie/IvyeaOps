@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add versioned field-level eMAG diagnostics and approval evidence gates, bounded return-reason observations, and local Listing claim-review hints.
+
 - Add persistent issue ownership and local 1688 supplier mapping, explicit unit-cost and replenishment scenarios, and snapshot-bound non-executing price/stock previews in Analysis tools.
 
 - Add an optional manually triggered Windows task for SSH access to the read-only eMAG job.

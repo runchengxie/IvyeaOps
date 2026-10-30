@@ -93,6 +93,14 @@ def transition(store_id, snapshot_id, issue_id, state, revision, note, actor, re
             raise ValueError('Record changed or transition is out of order; reload first')
         if state!='reviewed' and latest['snapshot_id']!=snapshot_id:
             raise ValueError('Evidence is stale; use the latest snapshot')
+        if state in ('proposed','approved'):
+            from app.services import emag_decisions
+            if state=='proposed':
+                findings=emag_decisions.diagnose(latest,issue_id)['findings']
+                if not findings:raise ValueError('No source-bound diagnosis available')
+                current['diagnosis']=findings[0]
+            gate=emag_decisions.verify(current.get('diagnosis',{}),latest)
+            if not gate['valid']:raise ValueError('Decision evidence invalid; a new source-bound proposal is required')
         if state=='reviewed':
             if latest['snapshot_id']==snapshot_id or latest['snapshot_id']!=review_snapshot_id:
                 raise ValueError('Review requires the explicitly inspected newer latest snapshot; reload first')

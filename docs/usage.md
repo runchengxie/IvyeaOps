@@ -113,3 +113,13 @@ All expense inputs are per unit. Missing values block the contribution estimate;
 Replenishment uses explicitly entered daily demand, lead time, safety days, inbound and reserved stock. It computes ceil(max(0, demand*(lead+safety)-(captured stock+inbound-reserved))). These are manual planning scenarios, not verified forecasts or purchase orders. Validate usable stock, cancellation/return effects, supplier MOQ and case sizes before purchasing.
 
 Price/stock previews bind the current snapshot and show old/new values. They cannot execute marketplace updates. Issue ownership is independently versioned and persists across snapshots; proposal approvals retain their original snapshot binding and do not carry forward automatically.
+
+## Deterministic diagnostic handoffs
+
+New snapshots include schema_version=1. Old snapshots without that field load as version 1 without rewriting their files. Evidence/Finding/Action retain legacy fields and add typed evidence, entity/version references, field paths and explicit dependencies. Legacy notes default to inference.
+
+The administrator diagnostics endpoint returns bounded, deterministic platform-issue review findings. Local proposals retain their diagnosis; approval checks the current store, product, snapshot, captured field values and registered rule/action dependencies. Missing values are null with a reason; valid stock zero remains observed. Estimates and arbitrary derived values have no decision-grade verifier in this version. Historical proposals without structured diagnosis require a new proposal against fresh evidence.
+
+Job reports include bounded JSON diagnostic handoffs. decision_gate reports included_findings_valid, findings_checked, findings_total, truncated and all_findings_verified separately. A truncated report is not verification of every store issue. These checks establish internal evidence consistency, not marketplace source accuracy.
+
+The research page groups captured return-request reasons by product and normalized reported text, deduplicating repeated cases. It reports missing reasons, unmatched products and malformed rows. These requests are not confirmed refunds and cannot represent overall satisfaction. Local Listing drafts receive conservative claim warnings for selected certifications, functions and measurements; no flag is a compliance pass, and images are not inspected.
