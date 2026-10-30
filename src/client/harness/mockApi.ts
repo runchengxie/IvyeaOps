@@ -1,3 +1,4 @@
+import clearanceFixture from './clearanceFixture.json';
 // 验证台的假后端。
 //
 // ── 为什么要有这个东西 ────────────────────────────────────────────────────
@@ -1661,6 +1662,10 @@ export function installMockApi(): void {
     if(full==='/emag/stores/demo-ro/workspace' && new URLSearchParams(location.search).get('quality')==='1'){
       const response=reply(config);const data=response.data as any;
       return {...response,data:{...data,return_voc:{status:'available',groups:[{offer_id:'1',reason:'Size mismatch',case_count:2,source_refs:['/data/commercial_evidence/returns_fbe/0/products/0/return_reason']}],missing_reason_rows:1,unmatched_rows:0,invalid_rows:0,groups_truncated:false},drafts:[{draft_id:'quality-demo',kind:'listing',title:'IP68 bottle',body:'Waterproof 500ml',product_id:'1',stale:false,created_at:'2026-10-30T00:00:00Z',quality_check:{requires_review:true,flags:[{claim:'IP68',field:'title',reason:'Independent evidence required'}]}}]}};
+    }
+    if(full==='/emag/stores/demo-ro/workspace' && new URLSearchParams(location.search).get('clearance')==='1'){
+      const response=reply(config);const data=response.data as any;
+      return {...response,data:{...data,offers:clearanceFixture.offers,clearance:clearanceFixture.clearance,summary:{...data.summary,offers:4}}};
     }
     if(full==='/emag/stores/demo-ro/workspace' && new URLSearchParams(location.search).get('stockcase')==='invalid'){
       const response=reply(config); const data=response.data as any;

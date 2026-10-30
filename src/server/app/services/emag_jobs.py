@@ -92,7 +92,8 @@ def run(store_id, collect_fn=None):
             receipt['changes']=preview
             receipt['changes_truncated']=len(preview)!=len(delta)
             history, history_incomplete = emag_audit.history(snapshot)
-            from app.services import emag_decisions
+            from app.services import emag_decisions, emag_clearance
+            clearance=emag_clearance.build(snapshot,history,history_incomplete)
             diagnostics = emag_decisions.diagnose(snapshot)
             diagnostic_lines=[]
             for finding in diagnostics['findings']:
@@ -112,6 +113,7 @@ def run(store_id, collect_fn=None):
                 f"Observed field changes: {len(delta)} (baseline available: {receipt['delta_available']})",
                 'Missing stock is unknown, not zero. Missing products are observations, not confirmed delistings.',
                 'No marketplace writes. Costs must be supplied before pricing/profit decisions.',
+                emag_clearance.render(clearance),
                 issue_details,
                 '## Issue references (first 200)',
                 *[f"- Product {emag_audit._cell(i['id'], 100)}: {emag_audit._cell(i['reason'], 50)}" for i in issues[:200]],
