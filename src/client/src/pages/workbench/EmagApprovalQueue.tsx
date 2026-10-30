@@ -57,7 +57,7 @@ export default function EmagApprovalQueue(){
       const proposal=p.issue.history.filter(h=>h.state==='proposed').at(-1);
       return <article className="ap-card" key={key(p)}>
         <h3>{p.issue.name||p.issue.part_number||p.issue.id} · {reasons[p.issue.reason]||p.issue.reason}</h3>
-        <p>店铺：{p.board.store_id} · 商品 ID：{p.issue.id} · SKU：{p.issue.part_number||'未知'}<br/>库存字段：{p.issue.general_stock??'未知'} · 售价字段：{p.issue.sale_price??'未知'}</p>
+        <p>店铺：{p.board.store_id} · 商品 ID：{p.issue.id} · SKU：{p.issue.part_number||'未知'}<br/>库存字段：{p.issue.general_stock??'未知'} · 税前售价字段：{p.issue.sale_price??'未知'}</p>
         <p>来源：{p.board.source}<br/>采集：{new Date(p.board.captured_at).toLocaleString()}<br/>版本：{p.board.snapshot_id} · revision {p.issue.revision}</p>
         <h4>待批准的方案</h4><p style={{whiteSpace:'pre-wrap'}}>{proposal?.note||'方案说明缺失，请先核对上下文。'}</p>
         {proposal&&<p>提出者：{proposal.actor} · {new Date(proposal.at).toLocaleString()}</p>}

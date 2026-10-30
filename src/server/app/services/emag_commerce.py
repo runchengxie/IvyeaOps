@@ -67,17 +67,18 @@ def calculate(inputs, offer):
         number(offer.get('sale_price'))
     except ValueError:
         missing.append('sale_price')
-    economics = {'status': 'incomplete', 'missing': missing, 'contribution_ron': None,
-                 'note': 'Per-unit scenario, not accounting profit; confirm VAT treatment, fees and actual procurement.'}
+    economics = {'sale_price_basis':'exclusive_vat','status': 'incomplete', 'missing': missing, 'contribution_ron': None,
+                 'note': 'Per-unit scenario, not accounting profit; raw eMAG price excludes VAT. Commission percentage is a user-entered gross-price scenario assumption, not a verified platform fee rule; confirm fees and procurement.'}
     if not missing:
         v = {key: number(inputs[key]) for key in COSTS}
         sale = number(offer['sale_price'])
-        revenue = sale / (1 + v['vat_pct'] / 100)
+        revenue = sale
+        gross_sale = sale * (1 + v['vat_pct'] / 100)
         cost = ((v['purchase_cny'] + v['domestic_cny']) * v['cny_to_ron']
                 + sum(v[k] for k in ('international_ron', 'duties_ron', 'fulfilment_ron', 'other_ron', 'return_allowance_ron')))
-        commission = sale * v['commission_pct'] / 100
+        commission = gross_sale * v['commission_pct'] / 100
         economics.update(status='actual_inputs_estimate' if inputs.get('cost_basis') == 'actual' else 'reference_estimate',
-                         revenue_ex_vat_ron=f'{revenue:.2f}', unit_cost_ron=f'{cost:.2f}',
+                         revenue_ex_vat_ron=f'{revenue:.2f}', gross_sale_price_ron=f'{gross_sale:.2f}', unit_cost_ron=f'{cost:.2f}',
                          commission_ron=f'{commission:.2f}', contribution_ron=f'{revenue-cost-commission:.2f}')
     missing_demand = [key for key in DEMAND if inputs.get(key) in (None, '')]
     if type(offer.get('general_stock')) is not int or offer['general_stock'] < 0:

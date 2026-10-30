@@ -20,7 +20,7 @@ def costs():
 
 def test_complete_economics_and_missing_inputs():
     result=commerce.calculate(costs(),{'sale_price':'119','general_stock':10})
-    assert result['economics']['contribution_ron']=='58.80'  # 119/1.19 - (22*0.65 + 5+1+4+2+3) - 119*0.10
+    assert result['economics']['contribution_ron']=='75.54'  # 119 - (22*0.65 + 5+1+4+2+3) - (119*1.19)*0.10
     assert result['economics']['status']=='reference_estimate'
     result=commerce.calculate({}, {'sale_price':'119'})
     assert result['economics']['contribution_ron'] is None
@@ -146,3 +146,19 @@ def test_archive_conflict_rolls_back_latest_record(snapshot):
         commerce.save('demo-ro',snap['snapshot_id'],'1',1,{'note':'next'},'operator')
     assert commerce.view('demo-ro')['products'][0]['record']['revision']==1
     assert len(commerce.history('demo-ro','1')['entries'])==1
+
+
+def test_emag_raw_price_is_net_and_vat_is_not_deducted_twice():
+    result=commerce.calculate(costs(),{'sale_price':'119'})['economics']
+    assert result['sale_price_basis']=='exclusive_vat'
+    assert result['revenue_ex_vat_ron']=='119.00'
+    assert result['gross_sale_price_ron']=='141.61'
+    assert result['commission_ron']=='14.16'
+    assert result['contribution_ron']=='75.54'
+
+
+def test_net_revenue_does_not_change_with_vat_when_commission_is_zero():
+    for vat in ('0','19','21'):
+        result=commerce.calculate({**costs(),'vat_pct':vat,'commission_pct':'0'},{'sale_price':'119'})['economics']
+        assert result['revenue_ex_vat_ron']=='119.00'
+        assert result['contribution_ron']=='89.70'
