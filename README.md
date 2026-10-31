@@ -14,10 +14,11 @@ A self-hosted eMAG RO operations workspace, forked from [Hector-xue/IvyeaOps](ht
 - Versioned snapshots, deterministic manual audit reports, bounded change previews and run receipts.
 - Administrator workspaces for inspection records, own-catalog research, plans and local Listing drafts.
 - Local proposal approvals bound to the current snapshot and revision. Approval does not execute a marketplace change.
+- A separate, disabled-by-default [admin price API](docs/emag-write-readiness.md) for exact single-offer approval, submission and read-back.
 - Read-scoped MCP tools for snapshots, receipts and reports. Saving a local report requires a write-scoped token.
 - A schedule preparation page with server-time previews and disabled plan export. No scheduler consumes these eMAG plan drafts.
 
-Purchase costs, profit, recommended selling prices, market-wide search volume and competitor sales are unavailable. No eMAG listing, price, stock or order writer is exposed by these workflows. Browser chat and image translation require their configured providers. The deterministic audit CLI needs neither an open console page nor a model.
+Purchase costs require seller inputs; scenario estimates are not accounting profit or recommended prices. Market-wide search volume and competitor sales are unavailable. Existing workspaces remain local-only; optional price execution uses the separate API above. No eMAG listing, stock or order writer is exposed. Browser chat and image translation require their configured providers. The deterministic audit CLI needs neither an open console page nor a model.
 
 ## Run from source
 

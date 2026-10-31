@@ -1,5 +1,7 @@
 # Usage, CLI and evidence contracts
 
+The optional [single-offer price API](emag-write-readiness.md#single-offer-price-api) is admin-only, disabled by default and separate from local workspace approvals. It has no frontend submission button; preparation and approval are local, while execution requires an exact digest, explicit confirmation and configured store binding.
+
 [简体中文](zh-CN/usage.md)
 
 ## Daily workflow

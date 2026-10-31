@@ -1,5 +1,7 @@
 # Architecture
 
+Optional marketplace price execution is a separate admin API and SQLite ledger. It does not reuse local issue approval or MCP report-write permission. See [ADR-0052](decisions/0052-separate-emag-price-api.md) and [price API](emag-write-readiness.md) for store binding, live preflight, uncertain-delivery blocking and read-back semantics.
+
 [简体中文](zh-CN/architecture.md)
 
 ## Components and ownership

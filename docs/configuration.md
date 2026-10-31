@@ -33,6 +33,8 @@ For localhost browser use, configure the actual origin, such as `http://127.0.0.
 
 ## eMAG credentials and modes
 
+Optional price execution reads `IVYEA_OPS_EMAG_WRITES_ENABLED` (default `0`) and `IVYEA_OPS_EMAG_WRITE_STORE_ID` (default empty) at server startup. Both must permit the exact store. See [price API](emag-write-readiness.md). These settings do not grant existing local approvals or MCP tokens marketplace submission rights.
+
 The network job CLI reads the Windows Generic Credential target `IvyeaOps/eMAG/RO`. Saving a website password in the browser is not equivalent. This target is not an environment key or a public API field. The browser UI does not read the password. Platform API credentials must have the required access and IP allowlisting.
 
 `--days` accepts integers 1–29, default 29. `--from-latest` reads an existing snapshot without network collection or credential access. Import/replay can be used on other platforms, but the current saved-credential network entry is Windows-specific.

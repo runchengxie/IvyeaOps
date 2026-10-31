@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+- Add a disabled-by-default admin API for separately approved single-offer eMAG prices, live preflight, durable attempts, no write retries and read-only reconciliation. Local workspace/MCP approvals remain local-only; development performed no live writes.
+
 - Correct eMAG scenario revenue to use the API’s VAT-exclusive sale_price directly; label the gross-price commission assumption and seller price bounds explicitly. Existing inputs are retained.
 
 - Add existing-stock clearance priorities, reconciled aging observations and bounded stock-change reviews to the dashboard and playbook.

@@ -1,5 +1,7 @@
 # 架构
 
+可选平台价格执行使用独立管理员API及SQLite台账，不复用本地异常审批或MCP报告写入权限。店铺绑定、实时预检、不确定送达阻塞和回读语义见[ADR-0052](../decisions/0052-separate-emag-price-api.md)及[价格API](emag-write-readiness.md)。
+
 [英文权威版本](../architecture.md)
 
 ## 组件边界
