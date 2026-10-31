@@ -1,4 +1,5 @@
 """No real credentials, merchant data or network writes are used here."""
+import importlib
 import json
 from datetime import datetime, timezone
 
@@ -11,6 +12,9 @@ from app.services import store_artifacts
 @pytest.fixture
 def case(tmp_path, monkeypatch):
     from app.core.config import settings
+    from app.services import emag_api_changes as svc
+    # Other API fixtures reload config; bind this fixture to the same instance.
+    monkeypatch.setattr(svc, 'settings', settings)
     monkeypatch.setattr(settings, 'data_dir', tmp_path)
     monkeypatch.setattr(settings, 'emag_writes_enabled', True, raising=False)
     monkeypatch.setattr(settings, 'emag_write_store_id', 'demo-ro', raising=False)
@@ -297,6 +301,8 @@ def test_admin_api_preview_approval_and_strict_execution_confirmation(case, monk
     from fastapi.testclient import TestClient
     from app.core.security import require_admin
     from app.routers import emag_api_changes as routes
+    # Match the current security dependency after earlier fixtures reload it.
+    importlib.reload(routes)
     make, _ = case
     s = make()
     app = FastAPI()
