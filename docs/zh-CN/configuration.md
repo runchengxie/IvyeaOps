@@ -1,5 +1,7 @@
 # 配置
 
+可选价格执行在服务器启动时读取 `IVYEA_OPS_EMAG_WRITES_ENABLED`（默认 `0`）和 `IVYEA_OPS_EMAG_WRITE_STORE_ID`（默认空），两项必须明确允许指定店铺。见[价格API](emag-write-readiness.md)。配置不会让现有本地审批或MCP令牌获得平台提交权限。
+
 [英文权威版本](../configuration.md)
 
 ## 配置来源

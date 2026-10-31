@@ -92,6 +92,10 @@ _ensure_localhost_no_proxy()  # …but keep localhost direct
 
 
 class Settings:
+    # Marketplace execution is separate from local previews and local MCP writes.
+    emag_writes_enabled: bool = os.getenv("IVYEA_OPS_EMAG_WRITES_ENABLED", "0") == "1"
+    emag_write_store_id: str = os.getenv("IVYEA_OPS_EMAG_WRITE_STORE_ID", "").strip()
+
     # --- Runtime paths ---
     root_dir: Path = _ROOT
 
