@@ -30,10 +30,10 @@ def _digest(p):
     return hashlib.sha256(_json({k: p[k] for k in CORE}).encode()).hexdigest()
 
 
-def _text(value, maximum=200):
+def _text(value, maximum=200, *, strip=True):
     if not isinstance(value, str) or not value.strip() or len(value) > maximum or any(ord(c) < 32 for c in value):
         raise ValueError('A nonempty bounded text value is required')
-    return value.strip()
+    return value.strip() if strip else value
 
 
 def _id(value):
@@ -61,8 +61,8 @@ def _amount(value, *, zero=False):
 def _baseline(offer):
     if offer.get('currency') != 'RON':
         raise ValueError('Only explicit RON offers are supported')
-    result = {'id': _id(offer.get('id')), 'part_number': _text(offer.get('part_number')),
-              'part_number_key': _text(offer.get('part_number_key')), 'currency': 'RON',
+    result = {'id': _id(offer.get('id')), 'part_number': _text(offer.get('part_number'), strip=False),
+              'part_number_key': _text(offer.get('part_number_key'), strip=False), 'currency': 'RON',
               'sale_price': _amount(offer.get('sale_price')),
               'min_sale_price': _amount(offer.get('min_sale_price'), zero=True),
               'max_sale_price': _amount(offer.get('max_sale_price'))}
@@ -221,7 +221,8 @@ def execute(store_id, proposal_id, digest, confirmed, actor, client, auth):
         with artifacts.snapshot_guard():
             _current(p)
             _binding(store_id)
-            _finish(store_id, proposal_id, 'submitting', actor, marketplace_write_attempted=True)
+            _finish(store_id, proposal_id, 'submitting', actor, marketplace_write_attempted=True,
+                    submission_status='uncertain')
             # Exactly one POST, never an automatic retry. Reads/writes use fixed origins.
             response = client.post(BASE + 'offer/save',
                 json={'data': [{'id': int(p['product_id']), 'sale_price': float(p['after']['sale_price'])}]},

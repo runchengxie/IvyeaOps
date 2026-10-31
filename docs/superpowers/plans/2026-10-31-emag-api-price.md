@@ -31,12 +31,14 @@
 
 **Interfaces:** `prepare(store_id, snapshot_id, product_id, changes, actor)`, `approve(store_id, proposal_id, digest, note, actor)`, `execute(..., client, auth)`, `reconcile(..., client, auth)`, `listing(store_id)`; execution and reconciliation return persisted receipts. Admin routes call a fixed credential boundary; test transports inject no real credentials.
 
-- [ ] Write failing tests for proposal validation/digests, stale approval, execution gates, live identity/bounds checks, exact request body, replay, uncertainty, reconciliation and HTTP admin boundaries.
-- [ ] Run tests and observe failure because the new service/router is absent.
-- [ ] Implement the ledger, fixed-origin transport, configuration gates and admin routes.
-- [ ] Verify focused tests, existing eMAG tests and lint; document usage and unchanged local-only semantics.
+- [x] Write failing tests for proposal validation/digests, stale approval, execution gates, live identity/bounds checks, exact request body, replay, uncertainty, reconciliation and HTTP admin boundaries.
+- [x] Run tests and observe failure because the new service/router is absent.
+- [x] Implement the ledger, fixed-origin transport, configuration gates and admin routes.
+- [x] Verify focused tests, existing eMAG tests and lint; document usage and unchanged local-only semantics.
 - [ ] Commit, obtain independent whole-branch review, fix important findings, run CI, merge and deploy under standing user authorization.
 
 ## Execution record
 
 Implementation follows the user's instruction to proceed with the API work. No concrete production price change is approved by that development request.
+
+Independent review found literal SKU/PNK normalization and pre-POST crash status defects. Five reproductions failed before fixes: identifiers now preserve literal whitespace and the attempted-write marker atomically records uncertain delivery. Additional pre-review tests fixed environment-proxy preservation and concurrent read-back revision conflicts. Live account rights and binding remain operator-verification requirements; external changes cannot be atomically excluded without a platform compare-and-set contract. Uncertain attempts remain manually investigated, and price read-back never proves saleability or cash.

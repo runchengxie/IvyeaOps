@@ -131,6 +131,8 @@ def test_exact_single_offer_body_readback_and_no_replay(case):
 
 @pytest.mark.parametrize('drift', [
     {'id': 99}, {'part_number': 'other'}, {'part_number_key': 'DOTHER001'},
+    {'part_number': ' sku-1'}, {'part_number': 'sku-1 '},
+    {'part_number_key': ' DTEST0001'}, {'part_number_key': 'DTEST0001 '},
     {'currency': 'EUR'}, {'sale_price': '118'}, {'min_sale_price': '3'}, {'max_sale_price': '301'},
 ])
 def test_live_preflight_drift_never_writes(case, drift):
@@ -220,6 +222,7 @@ def test_crash_after_claim_remains_blocked_and_readback_does_not_resend(case):
     row = svc.listing('demo-ro')['proposals'][0]
     assert row['state'] == 'submitting'
     assert row['marketplace_write_attempted'] is True
+    assert row['submission_status'] == 'uncertain'
     with pytest.raises(ValueError):
         execute(svc, p, crash)
     other = svc.prepare('demo-ro', s['snapshot_id'], p['product_id'], {'sale_price': 121}, 'admin')
